@@ -1,10 +1,10 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,23 +43,23 @@ public class SpectrumView extends Activity {
 		widthInt = pointScreenSize.x;
 		heightInt = pointScreenSize.y;		
 	}
-
+	
 	private RelativeLayout buildLayout() {
 		
 		RelativeLayout relativeLayout = new RelativeLayout(context);
 		TextView textView = new TextView(context);
 		textView.setText("This is boss!!!");
 		
-		ImageButton imageButton = new ImageButton(context);
-		imageButton.setBackgroundColor(Color.YELLOW);// this is really ugly but it is for testing.
+		DrawView drawView  = new DrawView(context);
+		// this is really ugly but it is for testing.
 
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
-		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(widthInt/6, heightInt/9);
-		relativeLayoutLayoutParams.setMargins((widthInt/6)+((widthInt/4)), (heightInt/9)/*+((heightInt/9)*i)*/, 0, 0);
-		relativeLayout.addView(imageButton, relativeLayoutLayoutParams);
+		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(widthInt/2, heightInt/2);
+		relativeLayoutLayoutParams.setMargins(0, 0, 0, 0);
+		relativeLayout.addView(drawView, relativeLayoutLayoutParams);
 		
-		relativeLayout.setBackgroundColor(Color.argb(255, 255, 150, 255));
+		relativeLayout.setBackgroundColor(Color.argb(255, 255, 0, 255));
 		return relativeLayout;
 	}
 
@@ -68,6 +68,24 @@ public class SpectrumView extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		//getMenuInflater().inflate(R.menu.spectrum_view, menu);
 		return true;
+	}
+	
+	private class DrawView extends View{
+
+		public DrawView(Context context) {
+			super(context);
+			setBackgroundColor(Color.argb(255, 255, 150, 255));
+		}
+		
+		@Override
+		protected void onDraw(Canvas canvas) {
+			super.onDraw(canvas);
+			float[] pointfloatArray = {10,10, 100,100};
+			Paint paint  = new Paint();
+			paint.setColor(Color.RED);
+			canvas.drawLines(pointfloatArray, 0, 1, paint );
+		}
+		
 	}
 
 }
