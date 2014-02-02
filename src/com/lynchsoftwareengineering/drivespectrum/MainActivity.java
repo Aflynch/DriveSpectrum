@@ -28,9 +28,12 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	LocationManager locationManager;
+	SharedPreferences sharedPreferences;
+	SharedPreferences.Editor sharedPerferencesEditor;
 	ArrayList<View> viewArrayList;
 	DriveSectrumLocationListener driveSectrumLocationListener;
 	Context context;
+	int dbOffSetInt;
 	int widthInt; 
 	int heightInt;
 	final String DS_DB_NAME = "DS_DB_NAME";
@@ -43,16 +46,29 @@ public class MainActivity extends Activity {
 		buildLayout();
 		driveSectrumLocationListener = new DriveSectrumLocationListener();
 		setContentView(buildLayout());
-		setUpGPS();
-		checkDB();
 	}
-	private void checkDB() {
+	
+	
+	private void rightToDB(String dataString){
+		dbOffSetInt++;
+		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
+		sharedPerferencesEditor.commit();
+	}
+	
+	private String readDB(int keyIndexInt){
 		
-		SharedPreferences sharedPreferences =  context.getSharedPreferences(DS_DB_NAME, Context.MODE_PRIVATE);
-		SharedPreferences.Editor sharedPreferencesEditor = sharedPreferences.edit();
-		sharedPreferencesEditor.putString("Key?", "Data?");
+		String bufferString = "";
+		sharedPreferences.getString("Key"+keyIndexInt, bufferString);
+		return bufferString;
+	}
+	
+	private void checkDB() {// Need to check it database as been used befor. 
+		
+		this.sharedPreferences = context.getSharedPreferences(DS_DB_NAME, Context.MODE_PRIVATE);
+		this.sharedPerferencesEditor = sharedPreferences.edit();
+		sharedPerferencesEditor.putString("Key?", "Data?");
 		//sharedPreferencesEditor.putInt("Test Data", "Key?");
-		sharedPreferencesEditor.commit();
+		sharedPerferencesEditor.commit();
 		String bufferString = "";
 		
 		Log.d("DB_TEST", sharedPreferences.getString("Key?", bufferString));
@@ -178,6 +194,8 @@ public class MainActivity extends Activity {
 
 			if(view.equals(viewArrayList.get(1))){
 				tagString = "Button 1 was pressed GPS is on.";
+				setUpGPS();
+				checkDB();
 			} else {
 				context.startActivity(new Intent(context, SpectrumView.class));
 			}
