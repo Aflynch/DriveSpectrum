@@ -1,6 +1,9 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +17,7 @@ import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.provider.ContactsContract.Data;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -27,15 +31,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+	DriveSectrumLocationListener driveSectrumLocationListener;
 	LocationManager locationManager;
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPerferencesEditor;
+	Calendar calendar;
 	ArrayList<View> viewArrayList;
-	DriveSectrumLocationListener driveSectrumLocationListener;
 	Context context;
 	int dbOffSetInt;
 	int widthInt; 
 	int heightInt;
+	final String OFF_SET_KEY = "OFF_SET_KEY";
 	final String DS_DB_NAME = "DS_DB_NAME";
 	final String DS_KEY = "DS_KEY";
 	@Override
@@ -45,34 +51,58 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		buildLayout();
 		driveSectrumLocationListener = new DriveSectrumLocationListener();
+		calendar = Calendar.getInstance();
 		setContentView(buildLayout());
+		checkDB();
+		testNulldata();
 	}
 	
 	
-	private void rightToDB(String dataString){
+	private void writeToDB(String dataString){
 		dbOffSetInt++;
 		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
+		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
 		sharedPerferencesEditor.commit();
 	}
 	
 	private String readDB(int keyIndexInt){
 		
 		String bufferString = "";
-		sharedPreferences.getString("Key"+keyIndexInt, bufferString);
+		bufferString = sharedPreferences.getString("Key"+keyIndexInt, bufferString);
 		return bufferString;
+	}
+	
+	private void testNulldata(){
+		String bufferString = "";
+		sharedPreferences.getString("Null Key", bufferString);
+		Log.d("DB_TEST", "data  = " + bufferString);
+	}
+	
+	public void dbToLogD(){
+		for (int i = 0; i <= dbOffSetInt ; i++){
+			Log.d("DB_TEST", readDB(i));
+		}
 	}
 	
 	private void checkDB() {// Need to check it database as been used befor. 
 		
 		this.sharedPreferences = context.getSharedPreferences(DS_DB_NAME, Context.MODE_PRIVATE);
 		this.sharedPerferencesEditor = sharedPreferences.edit();
-		sharedPerferencesEditor.putString("Key?", "Data?");
-		//sharedPreferencesEditor.putInt("Test Data", "Key?");
-		sharedPerferencesEditor.commit();
-		String bufferString = "";
+		sharedPerferencesEditor.putString("Key?", "Data??");
 		
-		Log.d("DB_TEST", sharedPreferences.getString("Key?", bufferString));
-		Toast.makeText(context, "DB Was checked", Toast.LENGTH_SHORT);// Would need a DB read Write + index file at "Ke_0" 
+		//sharedPerferencesEditor.putInt("Test Data", "Key?");
+		sharedPerferencesEditor.commit();
+		String testData = "";
+		testData = sharedPreferences.getString("Key?", testData);
+		String bufferString = "";
+		bufferString = sharedPreferences.getString(OFF_SET_KEY, bufferString);
+		Log.d("DB_TEST", bufferString);
+		if (bufferString.equals("")){
+			dbOffSetInt = -1;// write method ++ before updating dbOFFSetInt in db.
+		}else{
+			dbOffSetInt = Integer.parseInt(bufferString);
+		}
+		Toast.makeText(context, "DB Was checked. dbOffSett = "+ dbOffSetInt +" : "+testData, Toast.LENGTH_SHORT).show();// Would need a DB read Write + index file at "Ke_0" 
 		
 		
 		/*
@@ -99,6 +129,7 @@ public class MainActivity extends Activity {
 		widthInt = pointScreenSize.x;
 		heightInt = pointScreenSize.y;		
 	}
+	
 	private RelativeLayout buildLayout() {
 		
 		RelativeLayout relativeLayout = new RelativeLayout(context);
@@ -163,7 +194,9 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onLocationChanged(Location locatoin) {
+			Date date = calendar.getTime();
 			Toast.makeText(context, "lat "+ locatoin.getLatitude() + " : long "+ locatoin.getLongitude(), Toast.LENGTH_SHORT).show();
+			writeToDB(locatoin.getLatitude()+"#"+locatoin.getLongitude()+"#"+locatoin.getSpeed()+"#"+ date.toString());
 			// Need to log this data
 		}
 
@@ -183,6 +216,7 @@ public class MainActivity extends Activity {
 		public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 			// TODO Auto-generated method stub
 		}
+		
 	}
 
 	
@@ -196,11 +230,13 @@ public class MainActivity extends Activity {
 				tagString = "Button 1 was pressed GPS is on.";
 				setUpGPS();
 				checkDB();
+				dbToLogD();
+				
 			} else {
 				context.startActivity(new Intent(context, SpectrumView.class));
 			}
 			
-			Toast.makeText(context, tagString, Toast.LENGTH_SHORT).show();
+			//Toast.makeText(context, tagString, Toast.LENGTH_SHORT).show();
 		}
 		
 	}
