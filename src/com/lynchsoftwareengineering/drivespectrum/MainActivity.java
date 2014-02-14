@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -63,6 +65,14 @@ public class MainActivity extends Activity {
 		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
 		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
 		sharedPerferencesEditor.commit();
+	}
+	
+	private ArrayList<String> readAllDB(){ // db needs to be an object like for real. 
+		ArrayList<String> stringArrayList = new ArrayList<String>();
+		for(int i = 0; i < dbOffSetInt; i++ ){
+			stringArrayList.add(sharedPreferences.getString("Key"+i, "")); 
+		}
+		return stringArrayList;
 	}
 	
 	private String readDB(int keyIndexInt){
@@ -133,35 +143,39 @@ public class MainActivity extends Activity {
 	private RelativeLayout buildLayout() {
 		
 		RelativeLayout relativeLayout = new RelativeLayout(context);
+		/*
 		TextView textView = new TextView(context);
 		textView.setText("This is boss!!!");
-		
+		*/
 		viewArrayList = new ArrayList<View>();
-		viewArrayList.add(textView);
+		//viewArrayList.add(textView);
 		
-		ImageButton imageButton = new ImageButton(context);
-		imageButton.setBackgroundColor(Color.YELLOW);// this is really ugly but it is for testing.
-		viewArrayList.add(imageButton);
+		Button startButton = new Button(context);
+		startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
+		startButton.setTextColor(Color.WHITE);
+		startButton.setText("Start");
+		viewArrayList.add(startButton);
 		
-		ImageButton imageButtonTwo = new ImageButton(context);
-		imageButtonTwo.setBackgroundColor(Color.RED);
-		viewArrayList.add(imageButtonTwo);
+		Button mapButton = new Button(context);
+		mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
+		mapButton.setText("Map");
+		viewArrayList.add(mapButton);
 		
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
 		for(int i = 0; i < viewArrayList.size(); i++){ 
-			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(widthInt/6, heightInt/9);
-			relativeLayoutLayoutParams.setMargins((widthInt/6)+((widthInt/4)*i), (heightInt/9)/*+((heightInt/9)*i)*/, 0, 0);
+			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(widthInt/3, heightInt/9);
+			relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), (heightInt/9)/*+((heightInt/9)*i)*/, 0, 0);
 			relativeLayout.addView(viewArrayList.get(i), relativeLayoutLayoutParams);
 		}
 		
 		DriveSpectrumOnClickListener driveSpectrumOnClickListener = new DriveSpectrumOnClickListener();
 		// would be nice if I would use for loop here...
-		imageButton.setOnClickListener(driveSpectrumOnClickListener);
-		imageButtonTwo.setOnClickListener(driveSpectrumOnClickListener);
+		startButton.setOnClickListener(driveSpectrumOnClickListener);
+		mapButton.setOnClickListener(driveSpectrumOnClickListener);
 		
 		
-		relativeLayout.setBackgroundColor(Color.argb(255, 0, 150, 255));
+		relativeLayout.setBackgroundColor(Color.YELLOW);
 		return relativeLayout;
 	}
 
@@ -226,7 +240,7 @@ public class MainActivity extends Activity {
 		public void onClick(View view) {
 			Log.d("DB_TEST","onClick was called");
 
-			if(view.equals(viewArrayList.get(1))){
+			if(view.equals(viewArrayList.get(0))){
 				tagString = "Button 1 was pressed GPS is on.";
 				setUpGPS();
 				checkDB();
