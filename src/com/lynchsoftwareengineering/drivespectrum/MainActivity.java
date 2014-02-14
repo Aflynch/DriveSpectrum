@@ -241,7 +241,7 @@ public class MainActivity extends Activity {
 			Log.d("DB_TEST","onClick was called");
 
 			if(view.equals(viewArrayList.get(0))){
-				tagString = "Button 1 was pressed GPS is on.";
+				tagString = "GPS is on.";
 				setUpGPS();
 				checkDB();
 				dbToLogD();
