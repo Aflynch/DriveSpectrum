@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.lynchsoftwareengineering.drivespectrum.SpectrumView"
+            android:name="com.lynchsoftwareengineering.drivespectrum.SpectrumActivity"
             android:label="@string/title_activity_spectrum_view" >
         </activity>
     </application>

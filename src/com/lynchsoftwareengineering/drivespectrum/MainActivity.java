@@ -35,17 +35,12 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	DriveSectrumLocationListener driveSectrumLocationListener;
 	LocationManager locationManager;
-	SharedPreferences sharedPreferences;
-	SharedPreferences.Editor sharedPerferencesEditor;
+	DBSingleton dbSingleton;
 	Calendar calendar;
 	ArrayList<View> viewArrayList;
 	Context context;
-	int dbOffSetInt;
 	int widthInt; 
 	int heightInt;
-	final String OFF_SET_KEY = "OFF_SET_KEY";
-	final String DS_DB_NAME = "DS_DB_NAME";
-	final String DS_KEY = "DS_KEY";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		context = this;
@@ -55,76 +50,21 @@ public class MainActivity extends Activity {
 		driveSectrumLocationListener = new DriveSectrumLocationListener();
 		calendar = Calendar.getInstance();
 		setContentView(buildLayout());
-		checkDB();
-		testNulldata();
+		initCheckDB();
+		//testNulldata();
 	}
 	
 	
-	private void writeToDB(String dataString){
-		dbOffSetInt++;
-		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
-		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
-		sharedPerferencesEditor.commit();
-	}
 	
-	private ArrayList<String> readAllDB(){ // db needs to be an object like for real. 
-		ArrayList<String> stringArrayList = new ArrayList<String>();
-		for(int i = 0; i < dbOffSetInt; i++ ){
-			stringArrayList.add(sharedPreferences.getString("Key"+i, "")); 
-		}
-		return stringArrayList;
+
+	private void initCheckDB() {
+		dbSingleton = DBSingleton.getDBSingletion();
+		dbSingleton.checkDB(context);
 	}
-	
-	private String readDB(int keyIndexInt){
-		
-		String bufferString = "";
-		bufferString = sharedPreferences.getString("Key"+keyIndexInt, bufferString);
-		return bufferString;
-	}
-	
-	private void testNulldata(){
-		String bufferString = "";
-		sharedPreferences.getString("Null Key", bufferString);
-		Log.d("DB_TEST", "data  = " + bufferString);
-	}
-	
-	public void dbToLogD(){
-		for (int i = 0; i <= dbOffSetInt ; i++){
-			Log.d("DB_TEST", readDB(i));
-		}
-	}
-	
-	private void checkDB() {// Need to check it database as been used befor. 
-		
-		this.sharedPreferences = context.getSharedPreferences(DS_DB_NAME, Context.MODE_PRIVATE);
-		this.sharedPerferencesEditor = sharedPreferences.edit();
-		sharedPerferencesEditor.putString("Key?", "Data??");
-		
-		//sharedPerferencesEditor.putInt("Test Data", "Key?");
-		sharedPerferencesEditor.commit();
-		String testData = "";
-		testData = sharedPreferences.getString("Key?", testData);
-		String bufferString = "";
-		bufferString = sharedPreferences.getString(OFF_SET_KEY, bufferString);
-		Log.d("DB_TEST", bufferString);
-		if (bufferString.equals("")){
-			dbOffSetInt = -1;// write method ++ before updating dbOFFSetInt in db.
-		}else{
-			dbOffSetInt = Integer.parseInt(bufferString);
-		}
-		Toast.makeText(context, "DB Was checked. dbOffSett = "+ dbOffSetInt +" : "+testData, Toast.LENGTH_SHORT).show();// Would need a DB read Write + index file at "Ke_0" 
-		
-		
-		/*
-		SharedPreferences shardPreferences = getSharedPreferences(DS_DB_NAME, 0);
-		Editor editor =  shardPreferences.edit();
-		editor.putString(DS_KEY, "this is some awesome data!");
-		editor.commit();
-		// check data read. 
-		Log.d("BD_TEST", ""+shardPreferences.getLong(DS_KEY, 0));
-		long fileWasFound = shardPreferences.getLong(DS_KEY, (long) -1);	
-		*/	
-	}
+
+
+
+
 	private void getScreenSize(){
 		WindowManager windowManager = (WindowManager) context.getSystemService(context.WINDOW_SERVICE);
 		Display display = windowManager.getDefaultDisplay();
@@ -182,8 +122,7 @@ public class MainActivity extends Activity {
 	
 	protected void setUpGPS() {
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		final boolean gpsEnabled = locationManager
-				.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		if (!gpsEnabled) {
 			enableLocationSettings();//
 		}
@@ -210,7 +149,8 @@ public class MainActivity extends Activity {
 		public void onLocationChanged(Location locatoin) {
 			Date date = calendar.getTime();
 			Toast.makeText(context, "lat "+ locatoin.getLatitude() + " : long "+ locatoin.getLongitude(), Toast.LENGTH_SHORT).show();
-			writeToDB(locatoin.getLatitude()+"#"+locatoin.getLongitude()+"#"+locatoin.getSpeed()+"#"+ date.toString());
+			// need to have instace of DB
+			dbSingleton.writeToDB(locatoin.getLatitude()+"#"+locatoin.getLongitude()+"#"+locatoin.getSpeed()+"#"+ date.toString());
 			// Need to log this data
 		}
 
@@ -243,13 +183,11 @@ public class MainActivity extends Activity {
 			if(view.equals(viewArrayList.get(0))){
 				tagString = "GPS is on.";
 				setUpGPS();
-				checkDB();
-				dbToLogD();
+				dbSingleton.dbToLogD();
 				
 			} else {
-				context.startActivity(new Intent(context, SpectrumView.class));
+				context.startActivity(new Intent(context, SpectrumActivity.class));
 			}
-			
 			//Toast.makeText(context, tagString, Toast.LENGTH_SHORT).show();
 		}
 		
