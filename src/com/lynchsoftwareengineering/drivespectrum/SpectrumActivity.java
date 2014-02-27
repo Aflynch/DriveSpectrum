@@ -344,10 +344,12 @@ public class SpectrumActivity extends Activity {
 			canvas.drawLines(pointfloatArray, 0, 1, paint );
 			*/ 
 			
+			
 			int arraySizeInt = pointTimeArrayList.size()-1;
 			PointTime pointTime;
 			PointTime pointTime2;
 			Paint paint= new Paint();
+			paint.setStrokeWidth(3);
 			for (int i = 0; i < arraySizeInt ; i++){
 				pointTime = pointTimeArrayList.get(i);
 				pointTime2 = pointTimeArrayList.get(i+1);

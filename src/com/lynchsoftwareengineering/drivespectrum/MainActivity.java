@@ -6,15 +6,19 @@ import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -28,7 +32,10 @@ import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -91,31 +98,54 @@ public class MainActivity extends Activity {
 		//viewArrayList.add(textView);
 		
 		Button startButton = new Button(context);
-		startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
-		startButton.setTextColor(Color.WHITE);
-		startButton.setText("Start");
+		startButton.setBackgroundResource(R.drawable.drive_spectrum_startbutton_);
+		//startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
+		//startButton.setTextColor(Color.WHITE);
+		//startButton.setText("Start");
 		viewArrayList.add(startButton);
 		
 		Button mapButton = new Button(context);
-		mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
-		mapButton.setText("Map");
+		//mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
+		//mapButton.setText("Map");
+		mapButton.setBackgroundResource(R.drawable.drive_spectrum_mapbutton_);
 		viewArrayList.add(mapButton);
 		
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
-		for(int i = 0; i < viewArrayList.size(); i++){ 
-			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(widthInt/3, heightInt/9);
-			relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), (heightInt/9)/*+((heightInt/9)*i)*/, 0, 0);
-			relativeLayout.addView(viewArrayList.get(i), relativeLayoutLayoutParams);
+		//View view = new View(context);
+		//view.setBackgroundResource(R.drawable.brown);
+		///bannerView.setScaleType(ImageView.ScaleType.FIT_XY);
+		//imageView.
+		
+		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(widthInt, heightInt/7);
+		
+		layoutParams.setMargins(0, (heightInt/9), 0, 0);
+		//relativeLayout.addView(view, layoutParams);
+		//view.buildGraphices(viewArrayList);
+		int buttonWidthInt = widthInt/3;
+		int buttonHeightInt = heightInt/9;
+		
+		LinearLayout linearLayout  = new LinearLayout(context);
+		for(View view: viewArrayList){
+			linearLayout.addView(view);
 		}
+		relativeLayout.addView(linearLayout, layoutParams);
+		/*
+		for(int i = 0; i < viewArrayList.size(); i++){ 
+			
+
+			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(buttonWidthInt, buttonHeightInt);
+			relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), (heightInt/9)+(int)((heightInt/(1.0/63.0)))/*+((heightInt/9)*i)*//*, 0, 0);
+			relativeLayout.addView(viewArrayList.get(i), relativeLayoutLayoutParams);
+		}*/
 		
 		DriveSpectrumOnClickListener driveSpectrumOnClickListener = new DriveSpectrumOnClickListener();
 		// would be nice if I would use for loop here...
 		startButton.setOnClickListener(driveSpectrumOnClickListener);
 		mapButton.setOnClickListener(driveSpectrumOnClickListener);
+		relativeLayout.setBackgroundResource(R.drawable.greek_pattern_2);
 		
-		
-		relativeLayout.setBackgroundColor(Color.YELLOW);
+		//relativeLayout.setBackgroundColor(Color.YELLOW);
 		return relativeLayout;
 	}
 
@@ -173,7 +203,6 @@ public class MainActivity extends Activity {
 		
 	}
 
-	
 	private class DriveSpectrumOnClickListener implements OnClickListener{
 		String tagString  = "tag"; 
 		@Override
