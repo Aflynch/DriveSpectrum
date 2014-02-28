@@ -26,6 +26,7 @@ import android.provider.ContactsContract.Data;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -87,7 +88,7 @@ public class MainActivity extends Activity {
 		heightInt = pointScreenSize.y;		
 	}
 	
-	private RelativeLayout buildLayout() {
+	private View buildLayout() {
 		
 		RelativeLayout relativeLayout = new RelativeLayout(context);
 		/*
@@ -97,8 +98,8 @@ public class MainActivity extends Activity {
 		viewArrayList = new ArrayList<View>();
 		//viewArrayList.add(textView);
 		
-		Button startButton = new Button(context);
-		startButton.setBackgroundResource(R.drawable.drive_spectrum_startbutton_);
+		ImageButton startButton = new ImageButton(context);
+		startButton.setBackgroundResource(R.drawable.button_start_1);
 		//startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
 		//startButton.setTextColor(Color.WHITE);
 		//startButton.setText("Start");
@@ -107,13 +108,14 @@ public class MainActivity extends Activity {
 		Button mapButton = new Button(context);
 		//mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
 		//mapButton.setText("Map");
-		mapButton.setBackgroundResource(R.drawable.drive_spectrum_mapbutton_);
+		mapButton.setBackgroundResource(R.drawable.button_map_1);
 		viewArrayList.add(mapButton);
 		
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
 		//View view = new View(context);
 		//view.setBackgroundResource(R.drawable.brown);
+		//view.addChildrenForAccessibility(viewArrayList);
 		///bannerView.setScaleType(ImageView.ScaleType.FIT_XY);
 		//imageView.
 		
@@ -123,29 +125,32 @@ public class MainActivity extends Activity {
 		//relativeLayout.addView(view, layoutParams);
 		//view.buildGraphices(viewArrayList);
 		int buttonWidthInt = widthInt/3;
-		int buttonHeightInt = heightInt/9;
+		int buttonHeightInt = heightInt/9;		
 		
-		LinearLayout linearLayout  = new LinearLayout(context);
-		for(View view: viewArrayList){
-			linearLayout.addView(view);
-		}
-		relativeLayout.addView(linearLayout, layoutParams);
-		/*
+		RelativeLayout bannerRelativeLayout = new RelativeLayout(context);
+		//bannerRelativeLayout.setBackgroundColor(Color.BLACK);
+		bannerRelativeLayout.setBackgroundColor(Color.argb(200, 50, 50, 50));
+		
 		for(int i = 0; i < viewArrayList.size(); i++){ 
-			
-
 			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(buttonWidthInt, buttonHeightInt);
-			relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), (heightInt/9)+(int)((heightInt/(1.0/63.0)))/*+((heightInt/9)*i)*//*, 0, 0);
-			relativeLayout.addView(viewArrayList.get(i), relativeLayoutLayoutParams);
-		}*/
-		
+			relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), ((heightInt/7)-(buttonHeightInt))/2, 0, 0);
+			//relativeLayoutLayoutParams.setMargins((widthInt/12)+((widthInt/3)*i)+((widthInt/6)*i), (int)((heightInt/(1.0/63.0)))/*+((heightInt/9)*i)*/, 0, 0);
+			bannerRelativeLayout.addView(viewArrayList.get(i), relativeLayoutLayoutParams);
+		}
+		relativeLayout.addView(bannerRelativeLayout, layoutParams);
+
 		DriveSpectrumOnClickListener driveSpectrumOnClickListener = new DriveSpectrumOnClickListener();
 		// would be nice if I would use for loop here...
 		startButton.setOnClickListener(driveSpectrumOnClickListener);
 		mapButton.setOnClickListener(driveSpectrumOnClickListener);
 		relativeLayout.setBackgroundResource(R.drawable.greek_pattern_2);
-		
+		/*
+		LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View mainView = inflater.inflate(R.layout.banner_view, null, true);
+		relativeLayout.addView(mainView, layoutParams);
+		*/
 		//relativeLayout.setBackgroundColor(Color.YELLOW);
+		//bannerRelativeLayout.invalidate();
 		return relativeLayout;
 	}
 
