@@ -27,7 +27,7 @@ public class SpectrumActivity extends Activity {
 	Context context;
 	DBSingleton dbSingleton;
 	ArrayList<PointTime> pointTimeArrayList;
-	double latitudeMaxDouble ,latitudeMinDouble ,longitudeMaxDouble, longitudeMinDouble, maxSpeedDouble;
+	double latitudeMaxDouble ,latitudeMinDouble ,longitudeMaxDouble, longitudeMinDouble, maxSpeedDouble, lenghtInMetersLatitudeDouble, lengthInMetersLongitudeDouble;
 	int widthInt;
 	int heightInt;
 	int viewWidthInt;
@@ -49,7 +49,7 @@ public class SpectrumActivity extends Activity {
 		ArrayList<String> stringArrayList = dbSingleton.readAllDB();
 		if (stringArrayList.size() == 0){
 			return;// need to back at this latter and see if the return null still work
-		} /* I could right this in a way that would be more ready able, but I would lose speed. I think that 
+		} /* I could wright this in a way that would be more ready able, but I would lose speed. I think that 
 		That will larger date set speed could be an issue.*/
 		
 		/*
@@ -141,14 +141,14 @@ public class SpectrumActivity extends Activity {
 		
 		maxLocation.setLongitude(longitudeMaxDouble);
 		maxLocation.setLatitude(latitudeMaxDouble);
-		double lengthInMetersLongitudeDouble = minLocation.distanceTo(maxLocation);
+		lengthInMetersLongitudeDouble = minLocation.distanceTo(maxLocation);
 		
 		minLocation.setLongitude(longitudeMaxDouble);
 		minLocation.setLatitude(latitudeMinDouble);
 		
 		maxLocation.setLongitude(longitudeMaxDouble);
 		maxLocation.setLatitude(latitudeMaxDouble);
-		double lenghtInMetersLatitudeDouble = minLocation.distanceTo(maxLocation);
+		lenghtInMetersLatitudeDouble = minLocation.distanceTo(maxLocation);
 		
 		minLocation = null;
 		Location location = maxLocation; // Recycle XD
@@ -157,31 +157,34 @@ public class SpectrumActivity extends Activity {
 		for(String string: stringArrayList){
 			String[] gpsRowStringArray = string.split("#");
 			double latitudeDouble = Double.parseDouble(gpsRowStringArray[0]);
-			double longitudeDouble = Double.parseDouble(gpsRowStringArray[1]);
+			double longitudeDouble = Double.parseDouble(gpsRowStringArray[1]);// might be a problem here
 			location.setLatitude(latitudeDouble);
 			location.setLongitude(middleLongitudeDouble);
 			float distanceYInMetersFloat = middleLocation.distanceTo(location);
-			if (latitudeDouble < middleLatitudeDouble){
+			/*if (latitudeDouble < middleLatitudeDouble){
 				distanceYInMetersFloat *= -1;
-			}
+			}*/
 			
 			location.setLatitude(middleLatitudeDouble);
 			location.setLongitude(longitudeDouble);
 			float distanceXInMetersFloat = middleLocation.distanceTo(location);
-			if(longitudeDouble < middleLongitudeDouble){
+			/*if(longitudeDouble < middleLongitudeDouble){
 				distanceXInMetersFloat *= -1;
-			}
+			}*/
 			
 			//if (lengthInMetersLongitudeDouble > lenghtInMetersLatitudeDouble)
 			//new PointTime(xInt, yInt, speedMPS, timeString)
-			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, lenghtInMetersLatitudeDouble, viewWidthInt), convetDistcanceToPixels(distanceYInMetersFloat, lenghtInMetersLatitudeDouble, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]), gpsRowStringArray[3]));
+			
+			//viewWidthInt is the use for both.
+			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)+50/*demo offset*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]), gpsRowStringArray[3]));
 		}
 		
 		return pointTimeArrayList;
 	}
 	
-	private int convetDistcanceToPixels(double distanceInMeters,double latLonLengthInMetersDouble, int viewWidthHightInt) {
-		return (int)((distanceInMeters/latLonLengthInMetersDouble)*viewWidthHightInt);
+	private int convetDistcanceToPixels(double distanceInMeters, int viewWidthHightInt) {
+		double maxDistacneDouble = (lenghtInMetersLatitudeDouble > lengthInMetersLongitudeDouble )? lenghtInMetersLatitudeDouble : lengthInMetersLongitudeDouble;
+		return (int)((distanceInMeters/maxDistacneDouble)*viewWidthHightInt);
 	}
 
 	private double findDifference(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
@@ -209,7 +212,7 @@ public class SpectrumActivity extends Activity {
 		} else if (maxDouble < 0 && minDouble < 0){
 			return minDouble-(((minDouble - maxDouble))/2.0);
 		} else if (maxDouble >= 0 && minDouble < 0){
-			return (((maxDouble + minDouble)/2.0)>= 0)? ((maxDouble + minDouble)/2.0)- maxDouble : ((maxDouble + minDouble)/2)- minDouble;
+			return (((maxDouble + minDouble)/2.0)>= 0)? maxDouble - ((maxDouble + minDouble)/2.0) : ((maxDouble + minDouble)/2)- minDouble;
 		} else{
 			String errorString = "Case not covered in method findWidth in class SpectrumActivity";
 			Log.d("Test Data", errorString );
@@ -257,7 +260,7 @@ public class SpectrumActivity extends Activity {
 
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
-		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(viewWidthInt, viewWidthInt);
+		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(viewWidthInt, viewHightInt);
 		relativeLayoutLayoutParams.setMargins(widthInt/10, heightInt/10, 0, 0);
 		relativeLayout.addView(drawView, relativeLayoutLayoutParams);
 		
@@ -289,7 +292,7 @@ public class SpectrumActivity extends Activity {
 			LinePaintDataOject linePaintDataOject = new LinePaintDataOject();
 			for (int i = 0; i < arraySizeInt ; i++){
 				pointTime = pointTimeArrayList.get(i);
-				pointTime2 = pointTimeArrayList.get(i);
+				pointTime2 = pointTimeArrayList.get(i+1);
 				
 				int timeInt = convetStringTimeToInt(pointTime.getTimeString());
 				int timeInt2 = convetStringTimeToInt(pointTime2.getTimeString());
@@ -355,7 +358,7 @@ public class SpectrumActivity extends Activity {
 				pointTime2 = pointTimeArrayList.get(i+1);
 				int timeInt = convetStringTimeToInt(pointTime.getTimeString());
 				int timeInt2 = convetStringTimeToInt(pointTime2.getTimeString());
-				if ((timeInt2 -timeInt)< 200 && pointTime.speedMPS >3 ){
+				if ( (timeInt2 -timeInt)< 200 && pointTime.speedMPS >3 ){
 					int colorInt = (int)((pointTime.speedMPS*60)*60)*2;
 					paint.setColor(Color.argb(255,colorInt,colorInt,colorInt));
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
