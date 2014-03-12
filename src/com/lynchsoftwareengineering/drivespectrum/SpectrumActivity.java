@@ -25,7 +25,7 @@ import android.widget.TextView;
 
 public class SpectrumActivity extends Activity {
 	Context context;
-	DBSingleton dbSingleton;
+	DatabaseSingleton dbSingleton;
 	ArrayList<PointTime> pointTimeArrayList;
 	double latitudeMaxDouble ,latitudeMinDouble ,longitudeMaxDouble, longitudeMinDouble, maxSpeedDouble, lenghtInMetersLatitudeDouble, lengthInMetersLongitudeDouble;
 	int widthInt;
@@ -227,7 +227,7 @@ public class SpectrumActivity extends Activity {
 
 
 	private void initCheckDB() {
-		dbSingleton = DBSingleton.getDBSingletion();
+		dbSingleton = DatabaseSingleton.getDBSingletion();
 		dbSingleton.checkDB(context);
 	}
 

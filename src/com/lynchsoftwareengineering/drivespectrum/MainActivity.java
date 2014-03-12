@@ -43,7 +43,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	DriveSectrumLocationListener driveSectrumLocationListener;
 	LocationManager locationManager;
-	DBSingleton dbSingleton;
+	DatabaseSingleton dbSingleton;
 	Calendar calendar;
 	ArrayList<View> viewArrayList;
 	Context context;
@@ -54,6 +54,8 @@ public class MainActivity extends Activity {
 		context = this;
 		getScreenSize();
 		super.onCreate(savedInstanceState);
+		Intent intent = new Intent(this, GPSIntentService.class);
+		startService(intent);
 		buildLayout();
 		driveSectrumLocationListener = new DriveSectrumLocationListener();
 		calendar = Calendar.getInstance();
@@ -66,7 +68,7 @@ public class MainActivity extends Activity {
 	
 
 	private void initCheckDB() {
-		dbSingleton = DBSingleton.getDBSingletion();
+		dbSingleton = DatabaseSingleton.getDBSingletion();
 		dbSingleton.checkDB(context);
 	}
 

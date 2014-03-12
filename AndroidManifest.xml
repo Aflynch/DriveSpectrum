@@ -9,12 +9,14 @@
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/drive_spectrum_icon_0"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <service android:name=".GPSIntentService" />            
         <activity
             android:name="com.lynchsoftwareengineering.drivespectrum.MainActivity"
             android:label="@string/app_name" >

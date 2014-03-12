@@ -1,101 +1,66 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
-import java.util.ArrayList;
-
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.location.LocationManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
-
 public class DBSingleton {
-	static DBSingleton dbSingleton;
-	SharedPreferences sharedPreferences;
-	SharedPreferences.Editor sharedPerferencesEditor;
-	final String OFF_SET_KEY = "OFF_SET_KEY";
-	final String DS_DB_NAME = "DS_DB_NAME";
-	final String DS_KEY = "DS_KEY";
-	int dbOffSetInt;
-	private DBSingleton() {
-		
-	}
+
+	private static final String TEXT_TYPE = " TEXT";
+	private static final String REAL_TYPE = " REAL";
+	private static final String INTEGER_TYPE = " INTEGER";
+	private static final String COMMA_SEP = ",";
+	private static final String SQL_CREATE_ENTRIES =
+	    "CREATE TABLE " + DBContractClass.GPSEntry.TABLE_NAME + " (" +
+	    DBContractClass.GPSEntry._ID + " INTEGER PRIMARY KEY," +
+	    DBContractClass.GPSEntry.COLUMN_NAME_BEARING + REAL_TYPE + COMMA_SEP +
+	    DBContractClass.GPSEntry.COLUMN_NAME_LAT + REAL_TYPE + COMMA_SEP +
+	    DBContractClass.GPSEntry.COLUMN_NAME_LON + REAL_TYPE + COMMA_SEP +
+	    DBContractClass.GPSEntry.COLUMN_NAME_MAC_ADDRESS + TEXT_TYPE + COMMA_SEP +
+	    DBContractClass.GPSEntry.COLUMN_NAME_SPEED + REAL_TYPE + COMMA_SEP +
+	    DBContractClass.GPSEntry.COLUMN_NAME_TIME + INTEGER_TYPE + COMMA_SEP +
+	    " )";
+	private static final String SQL_DELETE_ENTRIES =
+	    "DROP TABLE IF EXISTS " + DBContractClass.GPSEntry.TABLE_NAME;
+	private static DBSingleton dBSingleton;
+
 	
-	public static DBSingleton getDBSingletion(){
-		if (dbSingleton == null){
-			dbSingleton = new DBSingleton();
-		}
-		return dbSingleton;
-	}
-	public void writeToDB(String dataString){
-		dbOffSetInt++;
-		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
-		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
-		sharedPerferencesEditor.commit();
-	}
-	
-	public ArrayList<String> readAllDB(){ // db needs to be an object like for real. 
-		ArrayList<String> stringArrayList = new ArrayList<String>();
-		for(int i = 0; i < dbOffSetInt; i++ ){
-			stringArrayList.add(sharedPreferences.getString("Key"+i, "")); 
-			//Log.d("Date Test", sharedPreferences.getString("Key"+i, ""));
-		}
-		return stringArrayList;
-	}
-	
-	public String readDB(int keyIndexInt){
-		
-		String bufferString = "";
-		bufferString = sharedPreferences.getString("Key"+keyIndexInt, bufferString);
-		return bufferString;
-	}
-	
-	private void testNulldata(){
-		String bufferString = "";
-		sharedPreferences.getString("Null Key", bufferString);
-		Log.d("DB_TEST", "data  = " + bufferString);
-	}
-	
-	public void dbToLogD(){
-		for (int i = 0; i <= dbOffSetInt ; i++){
-			Log.d("DB_TEST", readDB(i));
-		}
-	}
-	
-	public void checkDB(Context context ) {// Need to check it database as been used befor. 
-		// needs to be able to run with out context. latter going to use service. 
-		this.sharedPreferences = context.getSharedPreferences(DS_DB_NAME, Context.MODE_PRIVATE);
-		this.sharedPerferencesEditor = sharedPreferences.edit();
-		sharedPerferencesEditor.putString("Key?", "Data??");
-		
-		//sharedPerferencesEditor.putInt("Test Data", "Key?");
-		sharedPerferencesEditor.commit();
-		String testData = "";
-		testData = sharedPreferences.getString("Key?", testData);
-		String bufferString = "";
-		bufferString = sharedPreferences.getString(OFF_SET_KEY, bufferString);
-		Log.d("DB_TEST", bufferString);
-		if (bufferString.equals("")){
-			dbOffSetInt = -1;// write method ++ before updating dbOFFSetInt in db.
-		}else{
-			dbOffSetInt = Integer.parseInt(bufferString);
-		}
-		Toast.makeText(context, "DB Was checked. dbOffSett = "+ dbOffSetInt +" : "+testData, Toast.LENGTH_SHORT).show();// Would need a DB read Write + index file at "Ke_0" 
-		
-		
-		/*
-		SharedPreferences shardPreferences = getSharedPreferences(DS_DB_NAME, 0);
-		Editor editor =  shardPreferences.edit();
-		editor.putString(DS_KEY, "this is some awesome data!");
-		editor.commit();
-		// check data read. 
-		Log.d("BD_TEST", ""+shardPreferences.getLong(DS_KEY, 0));
-		long fileWasFound = shardPreferences.getLong(DS_KEY, (long) -1);	
-		*/	
+	private DBSingleton(){
+		// "Haha, You will ever get this"
 	}
 
-	public int getDbOffSetInt() {
-		return dbOffSetInt;
+	public static DBSingleton getInstanceOfDataBaseSingleton(){
+		if(dBSingleton == null){
+			dBSingleton = new DBSingleton();
+			return dBSingleton;
+		}else{
+			return dBSingleton;
+		}
 	}
 	
+	public class GPSReaderDbHelper extends SQLiteOpenHelper {
+	    // If you change the database schema, you must increment the database version.
+	    public static final int DATABASE_VERSION = 1;
+	    public static final String DATABASE_NAME = "GPSData.db";
+
+	    public GPSReaderDbHelper(Context context) {
+	        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+	    }
+	    public void onCreate(SQLiteDatabase db) {
+	        db.execSQL(SQL_CREATE_ENTRIES);
+	    }
+	    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	        // This database is only a cache for online data, so its upgrade policy is
+	        // to simply to discard the data and start over
+	    	
+	    	Log.d("database test", "onUpgrade was called, but no acction was taken.");
+	        //db.execSQL(SQL_DELETE_ENTRIES);
+	        //onCreate(db);
+	    }
+	    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	        onUpgrade(db, oldVersion, newVersion);
+	    }
+	}
 	
 }
+
