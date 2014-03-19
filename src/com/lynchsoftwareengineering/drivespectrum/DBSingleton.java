@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class DBSingleton {
+	//lilyphon@yahoo.com	
 	static DBSingleton dbSingleton;
 	SharedPreferences sharedPreferences;
 	SharedPreferences.Editor sharedPerferencesEditor;
