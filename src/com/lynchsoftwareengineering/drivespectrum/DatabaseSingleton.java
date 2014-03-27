@@ -16,6 +16,8 @@ public class DatabaseSingleton {
 	final String DS_DB_NAME = "DS_DB_NAME";
 	final String DS_KEY = "DS_KEY";
 	int dbOffSetInt;
+	//Context context;
+	LocationManager locationManager;
 	private DatabaseSingleton() {
 		
 	}

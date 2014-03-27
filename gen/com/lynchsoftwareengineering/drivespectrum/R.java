@@ -31,10 +31,11 @@ public final class R {
         public static final int drive_spectrum_main_1=0x7f020007;
         public static final int drive_spectrum_mapbutton_=0x7f020008;
         public static final int drive_spectrum_startbutton_=0x7f020009;
-        public static final int ds_backgorund=0x7f02000a;
-        public static final int greek_pattern_=0x7f02000b;
-        public static final int greek_pattern_2=0x7f02000c;
-        public static final int ic_launcher=0x7f02000d;
+        public static final int drivespectrumlogo=0x7f02000a;
+        public static final int ds_backgorund=0x7f02000b;
+        public static final int greek_pattern_=0x7f02000c;
+        public static final int greek_pattern_2=0x7f02000d;
+        public static final int ic_launcher=0x7f02000e;
     }
     public static final class id {
         public static final int action_settings=0x7f080002;

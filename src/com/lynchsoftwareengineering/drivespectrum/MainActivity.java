@@ -1,15 +1,20 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -47,9 +52,15 @@ public class MainActivity extends Activity {
 	Calendar calendar;
 	ArrayList<View> viewArrayList;
 	Context context;
+	private final String DB_NAME = "DB_NAME";
 	int widthInt; 
 	int heightInt;
+	
 	@Override
+	/* 
+	 * (non-Javadoc)
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	protected void onCreate(Bundle savedInstanceState) {
 		context = this;
 		getScreenSize();
@@ -61,11 +72,19 @@ public class MainActivity extends Activity {
 		calendar = Calendar.getInstance();
 		setContentView(buildLayout());
 		initCheckDB();
+		//going to try to make a file will been to make the database. 
+		File file = getDir(DB_NAME,Activity.MODE_PRIVATE);
+		DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath());
 		//testNulldata();
 	}
 	
-	
-	
+	/*
+	private SQLiteDatabase getWriteableSQLightDatabase() { // may not be need here.
+		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton();
+		GPSReaderDbHelper gpsReaderDbHelper = dbSingleton.new GPSReaderDbHelper(context);
+		SQLiteDatabase sqLiteDatabase = gpsReaderDbHelper.getWritableDatabase();
+		return sqLiteDatabase;
+	}	*/
 
 	private void initCheckDB() {
 		dbSingleton = DatabaseSingleton.getDBSingletion();

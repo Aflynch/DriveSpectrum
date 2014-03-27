@@ -1,8 +1,6 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
 import com.lynchsoftwareengineering.drivespectrum.DBContractClass.GPSEntry;
-import com.lynchsoftwareengineering.drivespectrum.DBSingleton.GPSReaderDbHelper;
-
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Context;
@@ -21,49 +19,26 @@ import android.provider.Settings;
 import android.util.Log;
 
 public class GPSIntentService extends IntentService {
-	public GPSIntentService(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
-
-	//Context context;
 	LocationManager locationManager;
 	CustomLocationListioner customLocationListioner;
-	String macAddressString;
-	
-	/*
-	public GPSIntentService(Context context) {
-		super("GPSIntentService");
-		this.context = context;
+	public GPSIntentService() {
+		super("GPDIntrentService");
 	}
-*/
+
 	@Override 
 	public void onStart(Intent intent, int startInt){
-		intent.get
-		setMacAddress();
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		customLocationListioner  = new CustomLocationListioner();
 		final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		if (!gpsEnabled) {
 			enableLocationSettings();//
 		}
-		LocationProvider provider = locationManager.getProvider(LocationManager.GPS_PROVIDER);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000, 10, customLocationListioner);
-	}
-
-	private void setMacAddress() {
-		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wInfo = wifiManager.getConnectionInfo();
-		macAddressString = wInfo.getMacAddress(); 
-	}
-
-	private SQLiteDatabase getWriteableSQLightDatabase() {
-		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton();
-		
-		GPSReaderDbHelper gpsReaderDbHelper = dbSingleton.new GPSReaderDbHelper();
-		SQLiteDatabase sqLiteDatabase = gpsReaderDbHelper.getWritableDatabase();
-		return sqLiteDatabase;
+		LocationProvider provider = locationManager
+				.getProvider(LocationManager.GPS_PROVIDER);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				1000, 10, customLocationListioner);
+		DBSingleton.getInstanceOfDataBaseSingletion(); 
+//		this is just a test there 
 	}
 	
 	@Override
@@ -96,17 +71,6 @@ public class GPSIntentService extends IntentService {
 
 		@Override
 		public void onLocationChanged(Location location) {
-			SQLiteDatabase sqLiteDatabaseWriteable = getWriteableSQLightDatabase(); // Need to come back and make readable database as well.
-			ContentValues contentValues = new ContentValues();
-			contentValues.put(GPSEntry.COLUMN_NAME_BEARING, ""+location.getBearing());
-			contentValues.put( GPSEntry.COLUMN_NAME_LAT, ""+location.getLatitude());
-			contentValues.put( GPSEntry.COLUMN_NAME_LON, ""+location.getLongitude());
-			contentValues.put( GPSEntry.COLUMN_NAME_MAC_ADDRESS ,macAddressString);
-			contentValues.put( GPSEntry.COLUMN_NAME_SPEED , ""+location.getSpeed());
-			contentValues.put( GPSEntry.COLUMN_NAME_TIME , ""+location.getTime());
-
-			sqLiteDatabaseWriteable.insert(GPSEntry.TABLE_NAME, null, contentValues);
-
 			for(int i = 0; i < 100; i++){
 				Log.d("Service", "Test'n bitch!!!"+location.toString());
 			}
