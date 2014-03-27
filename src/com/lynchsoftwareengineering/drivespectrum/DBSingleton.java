@@ -19,6 +19,7 @@ import android.util.Log;
  * as such.  
  */
 public class DBSingleton {
+<<<<<<< HEAD
 	private static final String DB_FILE_NAME  = "thebests";
 	private static final String TEXT_TYPE = " TEXT";
 	private static final String REAL_TYPE = " REAL";
@@ -39,6 +40,32 @@ public class DBSingleton {
 	private static DBSingleton dBSingleton;
 	private static boolean fileIsLoadedBoolean;
 
+=======
+	//lilyphon@yahoo.com	
+	static DBSingleton dbSingleton;
+	SharedPreferences sharedPreferences;
+	SharedPreferences.Editor sharedPerferencesEditor;
+	final String OFF_SET_KEY = "OFF_SET_KEY";
+	final String DS_DB_NAME = "DS_DB_NAME";
+	final String DS_KEY = "DS_KEY";
+	int dbOffSetInt;
+	private DBSingleton() {
+		
+	}
+	
+	public static DBSingleton getDBSingletion(){
+		if (dbSingleton == null){
+			dbSingleton = new DBSingleton();
+		}
+		return dbSingleton;
+	}
+	public void writeToDB(String dataString){
+		dbOffSetInt++;
+		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
+		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
+		sharedPerferencesEditor.commit();
+	}
+>>>>>>> origin/master
 	
 	private DBSingleton(String filePathString){
 		// "Haha, You will ever get this"
