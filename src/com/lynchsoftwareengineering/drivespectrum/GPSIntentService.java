@@ -20,6 +20,7 @@ import android.util.Log;
 
 public class GPSIntentService extends IntentService {
 	LocationManager locationManager;
+	DBSingleton dbSingleton ;
 	CustomLocationListioner customLocationListioner;
 	public GPSIntentService() {
 		super("GPDIntrentService");
@@ -27,37 +28,18 @@ public class GPSIntentService extends IntentService {
 
 	@Override 
 	public void onStart(Intent intent, int startInt){
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		customLocationListioner  = new CustomLocationListioner();
-		final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		if (!gpsEnabled) {
-			enableLocationSettings();//
-		}
-		LocationProvider provider = locationManager
-				.getProvider(LocationManager.GPS_PROVIDER);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				1000, 10, customLocationListioner);
-		DBSingleton.getInstanceOfDataBaseSingletion(); 
-//		this is just a test there 
-	}
-	
-	@Override
-	protected void onHandleIntent(Intent intent) {
-		for(int i = 0; i < 100; i++){
-			Log.d("Service", "Test'n bitch!!!"+intent.toString());
-		}
-		//customLocationListioner = new CustomLocationListioner();
+		setUpGPS();
 	}
 	
 	protected void setUpGPS() {
 		Log.d("log bitch", "line of code");
-	//	locationManager = (LocationManager) Context.getSystemService(LOCATION_SERVICE);
+	    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		if (!gpsEnabled) {
 			enableLocationSettings();//
 		}
-		LocationProvider provider = locationManager
-				.getProvider(LocationManager.GPS_PROVIDER);
+		LocationProvider provider = locationManager.getProvider(LocationManager.GPS_PROVIDER);
+		CustomLocationListioner customLocationListioner = new CustomLocationListioner();
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 				1000, 10, customLocationListioner);
 	}
@@ -66,14 +48,20 @@ public class GPSIntentService extends IntentService {
 		startActivity(settingsIntent);
 	}
 	
+	private void getDBSingleton(){
+		dbSingleton = DBSingleton.getInstanceOfDataBaseSingletion();
+		
+	}
 
 	private class CustomLocationListioner implements LocationListener{
 
 		@Override
 		public void onLocationChanged(Location location) {
-			for(int i = 0; i < 100; i++){
-				Log.d("Service", "Test'n bitch!!!"+location.toString());
+			if (dbSingleton == null){
+				getDBSingleton();
 			}
+			dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime());
+			Log.d("Service", "Test'n"+location.toString());
 		}
 
 		@Override

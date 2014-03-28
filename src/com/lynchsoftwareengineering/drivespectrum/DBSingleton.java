@@ -3,7 +3,11 @@ package com.lynchsoftwareengineering.drivespectrum;
 import java.io.File;
 import java.io.ObjectInputStream.GetField;
 
+import dalvik.system.BaseDexClassLoader;
+
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,14 +21,14 @@ import android.util.Log;
  * it manages the opening and editing of the database, and 
  * provides for a singleton access. Though it can not restrict access 
  * as such.  
- */
+ */ 
 public class DBSingleton {
-<<<<<<< HEAD
 	private static final String DB_FILE_NAME  = "thebests";
 	private static final String TEXT_TYPE = " TEXT";
 	private static final String REAL_TYPE = " REAL";
 	private static final String INTEGER_TYPE = " INTEGER";
 	private static final String COMMA_SEP = ",";
+	private static final String  CHECK_IT_TABLE_NAME_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
 	private static final String SQL_CREATE_ENTRIES =
 	    "CREATE TABLE " + DBContractClass.GPSEntry.TABLE_NAME + " (" +
 	    DBContractClass.GPSEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -38,9 +42,10 @@ public class DBSingleton {
 	private static final String SQL_DELETE_ENTRIES =
 	    "DROP TABLE IF EXISTS " + DBContractClass.GPSEntry.TABLE_NAME;
 	private static DBSingleton dBSingleton;
+	private String macAddressString;
 	private static boolean fileIsLoadedBoolean;
 
-=======
+
 	//lilyphon@yahoo.com	
 	static DBSingleton dbSingleton;
 	SharedPreferences sharedPreferences;
@@ -49,6 +54,7 @@ public class DBSingleton {
 	final String DS_DB_NAME = "DS_DB_NAME";
 	final String DS_KEY = "DS_KEY";
 	int dbOffSetInt;
+	private String filePathString;
 	private DBSingleton() {
 		
 	}
@@ -59,23 +65,40 @@ public class DBSingleton {
 		}
 		return dbSingleton;
 	}
-	public void writeToDB(String dataString){
+	
+	public void writeMapDB(String dataString){
 		dbOffSetInt++;
 		sharedPerferencesEditor.putString("Key"+dbOffSetInt, dataString);
 		sharedPerferencesEditor.putString(OFF_SET_KEY, ""+dbOffSetInt);
 		sharedPerferencesEditor.commit();
 	}
->>>>>>> origin/master
+	public synchronized void writeGPSDataToDB(float bearingFloat, double latitudeDouble, double longitudeDouble, double speedDouble, long timeLong){
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_BEARING, bearingFloat);
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_LAT, latitudeDouble);
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_LON, longitudeDouble);
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_MAC_ADDRESS, macAddressString);
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_SPEED, speedDouble);
+		contentValues.put(DBContractClass.GPSEntry.COLUMN_NAME_TIME, timeLong);// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+		db.insert(DBContractClass.GPSEntry.TABLE_NAME, null, contentValues);
+	}
 	
-	private DBSingleton(String filePathString){
+	private DBSingleton(String filePathString, String macAddressString){
+		this.filePathString = filePathString;
+		this.macAddressString = macAddressString;
 		// "Haha, You will ever get this"
 
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 		if (db !=null){
-			db.execSQL(SQL_CREATE_ENTRIES);
+			Cursor cursor = db.rawQuery(CHECK_IT_TABLE_NAME_EXISTS, null);
+			if(cursor.getCount() ==  0){
+				db.execSQL(SQL_CREATE_ENTRIES);
+			}else{
+				Log.d("running" , "SQLightDataBase and table  "+DBContractClass.GPSEntry.TABLE_NAME +" loaded.");
+			}
 		}
 		db.close();
-	
 	}
 
 	public static DBSingleton getInstanceOfDataBaseSingletion(){
@@ -85,10 +108,10 @@ public class DBSingleton {
 			return null; // I know it would be null either way but it make me fee better. 
 		}
 	}
-	public static DBSingleton getInstanceOfDataBaseSingleton(String filePathString){
+	public static DBSingleton getInstanceOfDataBaseSingleton(String filePathString, String macAddressString){
 		//Then one day he got this
 		if(dBSingleton == null){
-			dBSingleton = new DBSingleton(filePathString);
+			dBSingleton = new DBSingleton(filePathString, macAddressString);
 			fileIsLoadedBoolean = true;
 			return dBSingleton;
 		}else{

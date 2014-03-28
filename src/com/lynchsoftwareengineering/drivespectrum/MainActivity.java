@@ -24,6 +24,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.media.Image;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -46,7 +48,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	DriveSectrumLocationListener driveSectrumLocationListener;
 	LocationManager locationManager;
 	DatabaseSingleton dbSingleton;
 	Calendar calendar;
@@ -68,31 +69,17 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent(this, GPSIntentService.class);
 		startService(intent);
 		buildLayout();
-		driveSectrumLocationListener = new DriveSectrumLocationListener();
-		calendar = Calendar.getInstance();
 		setContentView(buildLayout());
-		initCheckDB();
-		//going to try to make a file will been to make the database. 
+		//should be put in  method latter. 
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wInfo = wifiManager.getConnectionInfo();
+		String macAddress = wInfo.getMacAddress();
 		File file = getDir(DB_NAME,Activity.MODE_PRIVATE);
-		DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath());
-		//testNulldata();
+		DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
+		wifiManager =null;
+		wInfo= null;
+		//test
 	}
-	
-	/*
-	private SQLiteDatabase getWriteableSQLightDatabase() { // may not be need here.
-		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton();
-		GPSReaderDbHelper gpsReaderDbHelper = dbSingleton.new GPSReaderDbHelper(context);
-		SQLiteDatabase sqLiteDatabase = gpsReaderDbHelper.getWritableDatabase();
-		return sqLiteDatabase;
-	}	*/
-
-	private void initCheckDB() {
-		dbSingleton = DatabaseSingleton.getDBSingletion();
-		dbSingleton.checkDB(context);
-	}
-
-
-
 
 	private void getScreenSize(){
 		WindowManager windowManager = (WindowManager) context.getSystemService(context.WINDOW_SERVICE);
@@ -175,18 +162,6 @@ public class MainActivity extends Activity {
 		return relativeLayout;
 	}
 
-	
-	protected void setUpGPS() {
-		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		if (!gpsEnabled) {
-			enableLocationSettings();//
-		}
-		LocationProvider provider = locationManager
-				.getProvider(LocationManager.GPS_PROVIDER);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				10000, 10, driveSectrumLocationListener);
-	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -198,36 +173,6 @@ public class MainActivity extends Activity {
 		Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 		startActivity(settingsIntent);
 	}
-	
-	public class DriveSectrumLocationListener implements LocationListener {
-
-		@Override
-		public void onLocationChanged(Location locatoin) {
-			Date date = calendar.getTime();
-			Toast.makeText(context, "lat "+ locatoin.getLatitude() + " : long "+ locatoin.getLongitude(), Toast.LENGTH_SHORT).show();
-			// need to have instace of DB
-			dbSingleton.writeToDB(locatoin.getLatitude()+"#"+locatoin.getLongitude()+"#"+locatoin.getSpeed()+"#"+ date.toString());
-			// Need to log this data
-		}
-
-		@Override
-		public void onProviderDisabled(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onProviderEnabled(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
-			// TODO Auto-generated method stub
-		}
-		
-	}
 
 	private class DriveSpectrumOnClickListener implements OnClickListener{
 		String tagString  = "tag"; 
@@ -237,7 +182,6 @@ public class MainActivity extends Activity {
 
 			if(view.equals(viewArrayList.get(0))){
 				tagString = "GPS is on.";
-				setUpGPS();
 				dbSingleton.dbToLogD();
 				
 			} else {
