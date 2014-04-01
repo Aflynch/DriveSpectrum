@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
 	Calendar calendar;
 	ArrayList<View> viewArrayList;
 	Context context;
-	private final String DB_NAME = "DB_NAME";
+	public static final String DB_NAME = "DB_NAME";
 	int widthInt; 
 	int heightInt;
 	
@@ -66,8 +66,6 @@ public class MainActivity extends Activity {
 		context = this;
 		getScreenSize();
 		super.onCreate(savedInstanceState);
-		Intent intent = new Intent(this, GPSIntentService.class);
-		startService(intent);
 		buildLayout();
 		setContentView(buildLayout());
 		//should be put in  method latter. 
@@ -75,11 +73,20 @@ public class MainActivity extends Activity {
 		WifiInfo wInfo = wifiManager.getConnectionInfo();
 		String macAddress = wInfo.getMacAddress();
 		File file = getDir(DB_NAME,Activity.MODE_PRIVATE);
-		DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
+		Intent intent = new Intent(this, GPSIntentService.class);
+		intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wInfo.getMacAddress());
+		intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
+		startService(intent);
+		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
+		ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
+		for(String string: stringArrayList){
+			Log.d("running",string);
+		}
 		wifiManager =null;
 		wInfo= null;
 		//test
 	}
+		
 
 	private void getScreenSize(){
 		WindowManager windowManager = (WindowManager) context.getSystemService(context.WINDOW_SERVICE);
@@ -107,7 +114,7 @@ public class MainActivity extends Activity {
 		//viewArrayList.add(textView);
 		
 		ImageButton startButton = new ImageButton(context);
-		startButton.setBackgroundResource(R.drawable.button_start_1);
+		startButton.setBackgroundResource(R.drawable.stats_button);
 		//startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
 		//startButton.setTextColor(Color.WHITE);
 		//startButton.setText("Start");
@@ -116,7 +123,7 @@ public class MainActivity extends Activity {
 		Button mapButton = new Button(context);
 		//mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
 		//mapButton.setText("Map");
-		mapButton.setBackgroundResource(R.drawable.button_map_1);
+		mapButton.setBackgroundResource(R.drawable.map_button);
 		viewArrayList.add(mapButton);
 		
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
@@ -137,7 +144,7 @@ public class MainActivity extends Activity {
 		
 		RelativeLayout bannerRelativeLayout = new RelativeLayout(context);
 		//bannerRelativeLayout.setBackgroundColor(Color.BLACK);
-		bannerRelativeLayout.setBackgroundColor(Color.argb(200, 50, 50, 50));
+		bannerRelativeLayout.setBackgroundColor(Color.argb(0, 50, 50, 50));
 		
 		for(int i = 0; i < viewArrayList.size(); i++){ 
 			RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(buttonWidthInt, buttonHeightInt);
@@ -151,7 +158,7 @@ public class MainActivity extends Activity {
 		// would be nice if I would use for loop here...
 		startButton.setOnClickListener(driveSpectrumOnClickListener);
 		mapButton.setOnClickListener(driveSpectrumOnClickListener);
-		relativeLayout.setBackgroundResource(R.drawable.greek_pattern_2);
+		relativeLayout.setBackgroundResource(R.drawable.back_ground);
 		/*
 		LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View mainView = inflater.inflate(R.layout.banner_view, null, true);

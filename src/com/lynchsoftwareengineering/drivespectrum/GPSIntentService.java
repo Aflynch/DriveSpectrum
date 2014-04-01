@@ -19,15 +19,23 @@ import android.provider.Settings;
 import android.util.Log;
 
 public class GPSIntentService extends IntentService {
+	public static int MAC_ADDRESS_KEY = 0;
+	public static int FILE_PATH_KEY=1;
 	LocationManager locationManager;
 	DBSingleton dbSingleton ;
 	CustomLocationListioner customLocationListioner;
+	String macAddressString;
+	String filePathString;
 	public GPSIntentService() {
 		super("GPDIntrentService");
 	}
 
 	@Override 
 	public void onStart(Intent intent, int startInt){
+		super.onStart(intent, startInt);
+		macAddressString = intent.getStringExtra(""+MAC_ADDRESS_KEY);
+		filePathString = intent.getStringExtra(""+FILE_PATH_KEY);
+		
 		setUpGPS();
 	}
 	
@@ -45,6 +53,7 @@ public class GPSIntentService extends IntentService {
 	}
 	private void enableLocationSettings() {
 		Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+		settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(settingsIntent);
 	}
 	
@@ -60,8 +69,8 @@ public class GPSIntentService extends IntentService {
 			if (dbSingleton == null){
 				getDBSingleton();
 			}
-			dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime());
-			Log.d("Service", "Test'n"+location.toString());
+			dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),System.currentTimeMillis());
+			Log.d("Service", "GPS data send to  database."+location.toString());
 		}
 
 		@Override
@@ -81,5 +90,11 @@ public class GPSIntentService extends IntentService {
 			// TODO Auto-generated method stub
 			
 		}	
+	}
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		
 	}
 }

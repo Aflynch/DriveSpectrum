@@ -1,5 +1,6 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Map;
@@ -12,6 +13,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.location.Location;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -25,8 +28,10 @@ import android.widget.TextView;
 
 public class SpectrumActivity extends Activity {
 	Context context;
-	DatabaseSingleton dbSingleton;
+	DBSingleton dbSingleton;
 	ArrayList<PointTime> pointTimeArrayList;
+	String filePathString;
+	String macAddressString;
 	double latitudeMaxDouble ,latitudeMinDouble ,longitudeMaxDouble, longitudeMinDouble, maxSpeedDouble, lenghtInMetersLatitudeDouble, lengthInMetersLongitudeDouble;
 	int widthInt;
 	int heightInt;
@@ -41,12 +46,20 @@ public class SpectrumActivity extends Activity {
 		getScreenSize();
 		initCheckDB();
 		prepData();
-		setContentView(buildLayout());
+		setContentView(buildLayout()); // Array problems here
 	}
 	
 	private void prepData() {/* Really much of this needs to be changed. This is just the first build. This will be on the the first system I will come back to look over after my first demo.*/
 		
-		ArrayList<String> stringArrayList = dbSingleton.readAllDB();
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wInfo = wifiManager.getConnectionInfo();
+		String macAddress = wInfo.getMacAddress();
+		File file = getDir(MainActivity.DB_NAME,Activity.MODE_PRIVATE);
+		macAddressString = wInfo.getMacAddress();
+		filePathString = file.getAbsolutePath();
+		
+		
+		ArrayList<String> stringArrayList = dbSingleton.listAllFromDB();
 		if (stringArrayList.size() == 0){
 			return;// need to back at this latter and see if the return null still work
 		} /* I could wright this in a way that would be more ready able, but I would lose speed. I think that 
@@ -176,15 +189,15 @@ public class SpectrumActivity extends Activity {
 			//new PointTime(xInt, yInt, speedMPS, timeString)
 			
 			//viewWidthInt is the use for both.
-			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)+50/*demo offset*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]), gpsRowStringArray[3]));
+			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)+50/*demo offset*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
 		}
 		
 		return pointTimeArrayList;
 	}
-	
-	private int convetDistcanceToPixels(double distanceInMeters, int viewWidthHightInt) {
+	// The is something really wrong here. 
+	private int convetDistcanceToPixels(double distanceInMetersDouble, int viewWidthHightInt) {
 		double maxDistacneDouble = (lenghtInMetersLatitudeDouble > lengthInMetersLongitudeDouble )? lenghtInMetersLatitudeDouble : lengthInMetersLongitudeDouble;
-		return (int)((distanceInMeters/maxDistacneDouble)*viewWidthHightInt);
+		return (int)((distanceInMetersDouble/maxDistacneDouble)*viewWidthHightInt);
 	}
 
 	private double findDifference(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
@@ -227,8 +240,7 @@ public class SpectrumActivity extends Activity {
 
 
 	private void initCheckDB() {
-		dbSingleton = DatabaseSingleton.getDBSingletion();
-		dbSingleton.checkDB(context);
+		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);// No check need new version :)
 	}
 
 	private void getScreenSize(){
@@ -261,7 +273,7 @@ public class SpectrumActivity extends Activity {
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
 		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(viewWidthInt, viewHightInt);
-		relativeLayoutLayoutParams.setMargins(widthInt/10, heightInt/10, 0, 0);
+		relativeLayoutLayoutParams.setMargins(widthInt/10, heightInt/10, 10,10);
 		relativeLayout.addView(drawView, relativeLayoutLayoutParams);
 		
 		relativeLayout.setBackgroundColor(Color.YELLOW);
@@ -281,27 +293,27 @@ public class SpectrumActivity extends Activity {
 		public DrawView(Context context) {
 			super(context);
 			setBackgroundColor(Color.argb(255, 255, 165, 0));
-			fillFloatArray();
+		//	fillFloatArray();
 		}
-		
-		private void fillFloatArray() {
-			
-			int arraySizeInt = pointTimeArrayList.size()-1;
-			PointTime pointTime;
-			PointTime pointTime2;
-			LinePaintDataOject linePaintDataOject = new LinePaintDataOject();
-			for (int i = 0; i < arraySizeInt ; i++){
-				pointTime = pointTimeArrayList.get(i);
-				pointTime2 = pointTimeArrayList.get(i+1);
-				
-				int timeInt = convetStringTimeToInt(pointTime.getTimeString());
-				int timeInt2 = convetStringTimeToInt(pointTime2.getTimeString());
-				
-				if ((timeInt2 -timeInt)> 300){
-					
-				}
-			}
-			
+//		
+//		private void fillFloatArray() {// EDIT list??? MV???
+//			
+//			int arraySizeInt = pointTimeArrayList.size()-1;
+//			PointTime pointTime;
+//			PointTime pointTime2;
+//			LinePaintDataOject linePaintDataOject = new LinePaintDataOject();
+//			for (int i = 0; i < arraySizeInt ; i++){// need to build of edge cases
+//				pointTime = pointTimeArrayList.get(i);
+//				pointTime2 = pointTimeArrayList.get(i+1);
+//				
+//				long timeLong  = pointTime.getTimeInMillsLong();
+//				long timeLong2 = pointTime2.getTimeInMillsLong();		
+//				if ((timeLong2 -timeLong)> 30000){
+//					pointTimeArrayList.remove(i);
+//				}
+//			}
+//
+	
 			/*
 			float x1 = 0;
 			float y1 = 0;
@@ -324,15 +336,15 @@ public class SpectrumActivity extends Activity {
 				linePaintDataOjectArrayList.add(linePaintDataOject); 
 			}
 			*/
-		}
-
-		private int convetStringTimeToInt(String timeString) {// 00:00 == new drive 
-			int lengthInt = timeString.length()+1;
-			int hhInt = Integer.parseInt(timeString.substring(lengthInt-18, lengthInt-16));
-			int mmInt = Integer.parseInt(timeString.substring(lengthInt-15, lengthInt-13));
-			int ssInt = Integer.parseInt(timeString.substring(lengthInt-12, lengthInt -10));
-			return ((hhInt*60)*60)+(mmInt*60)+(ssInt);
-		}
+//		}
+//
+//		private int convetStringTimeToInt(String timeString) {// 00:00 == new drive 
+//			int lengthInt = timeString.length()+1;
+//			int hhInt = Integer.parseInt(timeString.substring(lengthInt-18, lengthInt-16));
+//			int mmInt = Integer.parseInt(timeString.substring(lengthInt-15, lengthInt-13));
+//			int ssInt = Integer.parseInt(timeString.substring(lengthInt-12, lengthInt -10));
+//			return ((hhInt*60)*60)+(mmInt*60)+(ssInt);
+//		}
 
 		@Override
 		protected void onDraw(Canvas canvas) {
@@ -356,15 +368,15 @@ public class SpectrumActivity extends Activity {
 			for (int i = 0; i < arraySizeInt ; i++){
 				pointTime = pointTimeArrayList.get(i);
 				pointTime2 = pointTimeArrayList.get(i+1);
-				int timeInt = convetStringTimeToInt(pointTime.getTimeString());
-				int timeInt2 = convetStringTimeToInt(pointTime2.getTimeString());
-				if ( (timeInt2 -timeInt)< 200 && pointTime.speedMPS >3 ){
+				long timeLong = pointTime.getTimeInMillsLong();
+				long timeLong2 = pointTime.getTimeInMillsLong();
+		//		if ( (timeLong2 -timeLong)< 30000 && pointTime.speedMPS >3 ){
 					int colorInt = (int)((pointTime.speedMPS*60)*60)*2;
 					paint.setColor(Color.argb(255,colorInt,colorInt,colorInt));
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
 					pointTime = pointTimeArrayList.get(i);
 					pointTime2 = pointTimeArrayList.get(i);	
-				}
+			//	}
 			}
 			/*
 			for (LinePaintDataOject linePaintDataOject : linePaintDataOjectArrayList){
