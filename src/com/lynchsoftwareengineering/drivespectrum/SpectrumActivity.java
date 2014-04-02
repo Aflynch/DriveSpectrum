@@ -37,7 +37,7 @@ public class SpectrumActivity extends Activity {
 	int heightInt;
 	int viewWidthInt;
 	int viewHightInt;
-	private final int NORTH_INT = 0, SOUTH_INT = 1, EAST_INT = 2 , WEST_INT = 3;
+	private final int LATITUDE_INT = 0, LONGITUDE_INT = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,92 +47,97 @@ public class SpectrumActivity extends Activity {
 		initCheckDB();
 		prepData();
 		setContentView(buildLayout()); // Array problems here
+		//33.97941432#-84.01260397#30.1#1396312154436#178.0
+		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
 	}
 	
 	private void prepData() {/* Really much of this needs to be changed. This is just the first build. This will be on the the first system I will come back to look over after my first demo.*/
 		
-		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wInfo = wifiManager.getConnectionInfo();
-		String macAddress = wInfo.getMacAddress();
-		File file = getDir(MainActivity.DB_NAME,Activity.MODE_PRIVATE);
-		macAddressString = wInfo.getMacAddress();
-		filePathString = file.getAbsolutePath();
+		setUpDatabase();  // Getting instance of SBSingleton.
 		
+		//ArrayList<String> stringArrayList = getArrayListStringGPSDataAndSetStartMaxAndMinValues();// uses String.split to pull the data out in to datatypes 
+		//then sets the base max and min values (lat, lon, and speed). 
 		
-		ArrayList<String> stringArrayList = dbSingleton.listAllFromDB();
-		if (stringArrayList.size() == 0){
-			return;// need to back at this latter and see if the return null still work
-		} /* I could wright this in a way that would be more ready able, but I would lose speed. I think that 
-		That will larger date set speed could be an issue.*/
-		
-		/*
-		String[] gpsRowDateStringArray = stringArrayList.get(0).split("#");
-		for(String string: gpsRowDateStringArray){
-			Log.d("Date Test", string);
-		}
-		/*
-		Location location = new Location(LOCATION_SERVICE);
-		location.setLatitude(Double.parseDouble(gpsRowDateStringArray[0]));
-		location.setLongitude(Double.parseDouble(gpsRowDateStringArray[1]));
-		location.setSpeed(Float.parseFloat(gpsRowDateStringArray[2]));
-		*/
-		// Get first index values.
-		
-		/*
-		indexValue2DArrayDouble[NORTH_INT][0] = 0;
-		indexValue2DArrayDouble[NORTH_INT][1] = Double.parseDouble(gpsRowDateStringArray[1]);
+		//33.97941432#-84.01260397#30.1#1396312154436#178.0
+		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
+		ArrayList<String> stringArrayList = new ArrayList<String>();
 
-		indexValue2DArrayDouble[SOUTH_INT][0] = 0;
-		indexValue2DArrayDouble[SOUTH_INT][1] = Double.parseDouble(gpsRowDateStringArray[1]);
+		stringArrayList = getArrayListStringGPSDataAndSetStartMaxAndMinValues();
 		
-		indexValue2DArrayDouble[EAST_INT][0] = 0;
-		indexValue2DArrayDouble[EAST_INT][0] = Double.parseDouble(gpsRowDateStringArray[0]);
-		
-		indexValue2DArrayDouble[WEST_INT][0] = 0;
-		indexValue2DArrayDouble[WEST_INT][0] = Double.parseDouble(gpsRowDateStringArray[0]);
-		*/
-		
-		String[] baseGPSRowStringArray = stringArrayList.get(0).split("#");
-		latitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[0]);
-		latitudeMinDouble = latitudeMaxDouble;
-		longitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[1]);
-		longitudeMinDouble = longitudeMaxDouble;
-		maxSpeedDouble = Double.parseDouble(baseGPSRowStringArray[2]);
+		findMaxAndMinValues(stringArrayList);// does what it sounds like
 
-		
+		pointTimeArrayList = getRelivePointArrayList(stringArrayList);
+	}
+
+	private void findMaxAndMinValues(ArrayList<String> stringArrayList) {
 		//latitude N > 0
 		//latitude S < 0		
 		//longitude W is < 0
 		//longitude E is > 0
 		
 		// reread first index. I know it was just easier for testing. 
-		for(String gpsRowDateString :stringArrayList){
-			String[] gpsRowDateStringArray = gpsRowDateString.split("#");
+		int arraylistSizeInt = stringArrayList.size()-1;
+		for(int i  = 0; i <arraylistSizeInt; i++){
+			String[] gpsRowDateStringArray = stringArrayList.get(i).split("#");
+			String[] oneGPSRowDataStringArray = stringArrayList.get(i+1).split("#");
 			double latitudeDouble = Double.parseDouble(gpsRowDateStringArray[0]);
 			double longitudeDouble = Double.parseDouble(gpsRowDateStringArray[1]);
 			double speedDouble = Double.parseDouble(gpsRowDateStringArray[2]);
-			if( latitudeDouble> latitudeMaxDouble){
-				latitudeMaxDouble = latitudeDouble;	
-			}else if(latitudeDouble < latitudeMinDouble){
-				latitudeMinDouble = latitudeDouble;
-			}// one location could need to set both Lat and Long
-			if(longitudeDouble > longitudeMaxDouble){
-				longitudeMaxDouble = longitudeDouble;
-			}else if(longitudeDouble < longitudeMinDouble){
-				longitudeMinDouble = longitudeDouble;
+		//	if (!oneGPSRowDataStringArray[3].equals("0.0") || !gpsRowDateStringArray[3].equals("0.0")){
+			if ((Long.parseLong(oneGPSRowDataStringArray[3]) -Long.parseLong( gpsRowDateStringArray[3]))<30000){
+				if( latitudeDouble> latitudeMaxDouble){
+					latitudeMaxDouble = latitudeDouble;	
+				}else if(latitudeDouble < latitudeMinDouble){
+					latitudeMinDouble = latitudeDouble;
+				}// one location could need to set both Lat and Long
+				if(longitudeDouble > longitudeMaxDouble){
+					longitudeMaxDouble = longitudeDouble;
+				}else if(longitudeDouble < longitudeMinDouble){
+					longitudeMinDouble = longitudeDouble;
+				}
+				if(speedDouble > maxSpeedDouble){
+					maxSpeedDouble = speedDouble;
+				}
+		//	}
 			}
-			if(speedDouble > maxSpeedDouble){
-				maxSpeedDouble = speedDouble;
-			}
-
 		}
-		Log.d("Date Test", ""+latitudeMinDouble);
-		Log.d("Date Test", ""+latitudeMaxDouble);
-		Log.d("Date Test", ""+longitudeMinDouble);
-		Log.d("Date Test", ""+longitudeMaxDouble);
-		Log.d("Date Test", ""+((maxSpeedDouble*60)*60)/1000);
+		Log.d("Data Test", ""+latitudeMinDouble);
+		Log.d("Data Test", ""+latitudeMaxDouble);
+		Log.d("Data Test", ""+longitudeMinDouble);
+		Log.d("Data Test", ""+longitudeMaxDouble);
+		Log.d("Data Test", ""+((maxSpeedDouble*60)*60)/1000);
+	}
 
-		pointTimeArrayList = getRelivePointArrayList(stringArrayList);
+	private ArrayList<String> getArrayListStringGPSDataAndSetStartMaxAndMinValues() {
+		ArrayList<String> stringArraylist = dbSingleton.listAllFromDB();
+		if (stringArraylist.size() == 0){
+			return stringArraylist;// need to back at this latter and see if the return null still work
+		}
+		
+//		ArrayList<String> stringArraylist = new ArrayList<String>();
+//		stringArraylist.add("33.97941432#-84.01260397#30.1#1396312154436#178.0");
+//		stringArraylist.add("33.97941432#-80.01260397#30.1#1396312154436#178.0");
+//		stringArraylist.add("35.97941432#-82.01260397#30.1#1396312154436#178.0");
+//		for(String string: stringArraylist){
+//			Log.d("running", string);
+//		}
+		
+		String[] baseGPSRowStringArray = stringArraylist.get(0).split("#");
+		latitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[0]);
+		latitudeMinDouble = latitudeMaxDouble;
+		longitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[1]);
+		longitudeMinDouble = longitudeMaxDouble;
+		maxSpeedDouble = Double.parseDouble(baseGPSRowStringArray[2]);
+		return stringArraylist;
+	}
+
+	private void setUpDatabase() {
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wInfo = wifiManager.getConnectionInfo();
+		String macAddress = wInfo.getMacAddress();
+		File file = getDir(MainActivity.DB_NAME,Activity.MODE_PRIVATE);
+		macAddressString = wInfo.getMacAddress();
+		filePathString = file.getAbsolutePath();
 	}
 
 	private ArrayList<PointTime> getRelivePointArrayList(ArrayList<String> stringArrayList) {
@@ -162,51 +167,41 @@ public class SpectrumActivity extends Activity {
 		maxLocation.setLongitude(longitudeMaxDouble);
 		maxLocation.setLatitude(latitudeMaxDouble);
 		lenghtInMetersLatitudeDouble = minLocation.distanceTo(maxLocation);
-		
-		minLocation = null;
+		Log.d("lat", "lat " + lenghtInMetersLatitudeDouble + " lon"+ lengthInMetersLongitudeDouble);
 		Location location = maxLocation; // Recycle XD
+		minLocation.setLongitude(longitudeMinDouble);
+		minLocation.setLatitude(latitudeMaxDouble);///testing!!!!!
 		maxLocation = null;
 		ArrayList<PointTime> pointTimeArrayList = new ArrayList<PointTime>();
 		for(String string: stringArrayList){
 			String[] gpsRowStringArray = string.split("#");
 			double latitudeDouble = Double.parseDouble(gpsRowStringArray[0]);
 			double longitudeDouble = Double.parseDouble(gpsRowStringArray[1]);// might be a problem here
+			
 			location.setLatitude(latitudeDouble);
-			location.setLongitude(middleLongitudeDouble);
-			float distanceYInMetersFloat = middleLocation.distanceTo(location);
-			/*if (latitudeDouble < middleLatitudeDouble){
-				distanceYInMetersFloat *= -1;
-			}*/
+			location.setLongitude(longitudeMinDouble);
+			float distanceYInMetersFloat = minLocation.distanceTo(location);
 			
-			location.setLatitude(middleLatitudeDouble);
+			location.setLatitude(latitudeMaxDouble);////testing!!!!
 			location.setLongitude(longitudeDouble);
-			float distanceXInMetersFloat = middleLocation.distanceTo(location);
-			/*if(longitudeDouble < middleLongitudeDouble){
-				distanceXInMetersFloat *= -1;
-			}*/
-			
-			//if (lengthInMetersLongitudeDouble > lenghtInMetersLatitudeDouble)
-			//new PointTime(xInt, yInt, speedMPS, timeString)
-			
-			//viewWidthInt is the use for both.
-			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)+50/*demo offset*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
+			float distanceXInMetersFloat = minLocation.distanceTo(location);
+			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
 		}
-		
 		return pointTimeArrayList;
 	}
 	// The is something really wrong here. 
 	private int convetDistcanceToPixels(double distanceInMetersDouble, int viewWidthHightInt) {
-		double maxDistacneDouble = (lenghtInMetersLatitudeDouble > lengthInMetersLongitudeDouble )? lenghtInMetersLatitudeDouble : lengthInMetersLongitudeDouble;
-		return (int)((distanceInMetersDouble/maxDistacneDouble)*viewWidthHightInt);
+		double maxDistacneDouble = (lenghtInMetersLatitudeDouble >lengthInMetersLongitudeDouble )? lenghtInMetersLatitudeDouble : lengthInMetersLongitudeDouble;
+		return (int) ((distanceInMetersDouble / maxDistacneDouble) *( viewWidthHightInt*.96) +(viewWidthHightInt*.02));
 	}
 
-	private double findDifference(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
+	private  double findDifference(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
 		if (maxDouble >= 0 && minDouble >= 0){
-			return (minDouble - maxDouble);
-		} else if (maxDouble < 0 && minDouble < 0){
-			return (minDouble - maxDouble);
+			return (maxDouble - minDouble);
+		} else if (maxDouble < 0 ){
+			return Math.abs( (minDouble - maxDouble));
 		} else if (maxDouble >= 0 && minDouble < 0){
-			return (maxDouble + minDouble);
+			return (maxDouble + (minDouble*-1));
 		} else{
 			String errorString = "Case not covered in method findWidth in class SpectrumActivity";
 			Log.d("Test Data", errorString );
@@ -219,13 +214,13 @@ public class SpectrumActivity extends Activity {
 		return 0;
 	}
 
-	private double findMiddle(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
+	private  double findMiddle(double maxDouble, double minDouble) {// 5/(5-5) == 5/0 XD
 		if (maxDouble >= 0 && minDouble >= 0){
-			return minDouble +((minDouble - maxDouble)/2.0);
-		} else if (maxDouble < 0 && minDouble < 0){
-			return minDouble-(((minDouble - maxDouble))/2.0);
+			return (minDouble + maxDouble)/2.0;
+		} else if (maxDouble < 0 ){
+			return (minDouble + maxDouble)/2.0;
 		} else if (maxDouble >= 0 && minDouble < 0){
-			return (((maxDouble + minDouble)/2.0)>= 0)? maxDouble - ((maxDouble + minDouble)/2.0) : ((maxDouble + minDouble)/2)- minDouble;
+			return maxDouble-((maxDouble -minDouble)/2);
 		} else{
 			String errorString = "Case not covered in method findWidth in class SpectrumActivity";
 			Log.d("Test Data", errorString );
@@ -273,10 +268,10 @@ public class SpectrumActivity extends Activity {
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
 		
 		RelativeLayout.LayoutParams relativeLayoutLayoutParams = new RelativeLayout.LayoutParams(viewWidthInt, viewHightInt);
-		relativeLayoutLayoutParams.setMargins(widthInt/10, heightInt/10, 10,10);
+		relativeLayoutLayoutParams.setMargins(widthInt/10, heightInt/10,widthInt/ 10,heightInt/10);
 		relativeLayout.addView(drawView, relativeLayoutLayoutParams);
 		
-		relativeLayout.setBackgroundColor(Color.YELLOW);
+		relativeLayout.setBackgroundResource(R.drawable.back_ground);
 		return relativeLayout;
 	}
 
@@ -292,7 +287,7 @@ public class SpectrumActivity extends Activity {
 		ArrayList<LinePaintDataOject> linePaintDataOjectArrayList = new ArrayList<LinePaintDataOject>();
 		public DrawView(Context context) {
 			super(context);
-			setBackgroundColor(Color.argb(255, 255, 165, 0));
+			setBackgroundColor(Color.argb(50, 0, 0, 0));
 		//	fillFloatArray();
 		}
 //		
@@ -364,19 +359,22 @@ public class SpectrumActivity extends Activity {
 			PointTime pointTime;
 			PointTime pointTime2;
 			Paint paint= new Paint();
+			//canvas.clipRect(25, 25, 50, 50);
 			paint.setStrokeWidth(3);
+	
 			for (int i = 0; i < arraySizeInt ; i++){
 				pointTime = pointTimeArrayList.get(i);
 				pointTime2 = pointTimeArrayList.get(i+1);
 				long timeLong = pointTime.getTimeInMillsLong();
-				long timeLong2 = pointTime.getTimeInMillsLong();
-		//		if ( (timeLong2 -timeLong)< 30000 && pointTime.speedMPS >3 ){
-					int colorInt = (int)((pointTime.speedMPS*60)*60)*2;
-					paint.setColor(Color.argb(255,colorInt,colorInt,colorInt));
+				long timeLong2 = pointTime2.getTimeInMillsLong();
+				if ( (timeLong2 -timeLong)< 30000 && pointTime.speedMPS >4 ){
+					int colorInt =( (int)(255*(pointTime.speedMPS/ maxSpeedDouble)));
+					paint.setColor(Color.argb(255,255-colorInt,colorInt,0));
+//				canvas.drawLine(0, 0, 400, 400, paint);
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
 					pointTime = pointTimeArrayList.get(i);
 					pointTime2 = pointTimeArrayList.get(i);	
-			//	}
+				}
 			}
 			/*
 			for (LinePaintDataOject linePaintDataOject : linePaintDataOjectArrayList){

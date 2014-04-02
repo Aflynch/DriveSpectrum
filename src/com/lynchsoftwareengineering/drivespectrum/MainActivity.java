@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		buildLayout();
 		setContentView(buildLayout());
-		//should be put in  method latter. 
+//		should be put in  method latter. 
 		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		WifiInfo wInfo = wifiManager.getConnectionInfo();
 		String macAddress = wInfo.getMacAddress();
@@ -79,9 +79,6 @@ public class MainActivity extends Activity {
 		startService(intent);
 		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
 		ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
-		for(String string: stringArrayList){
-			Log.d("running",string);
-		}
 		wifiManager =null;
 		wInfo= null;
 		//test
@@ -114,7 +111,7 @@ public class MainActivity extends Activity {
 		//viewArrayList.add(textView);
 		
 		ImageButton startButton = new ImageButton(context);
-		startButton.setBackgroundResource(R.drawable.stats_button);
+		startButton.setBackgroundResource(R.drawable.light_stats_button);
 		//startButton.setBackgroundColor(Color.argb(255, 255, 165, 0));// this is really ugly but it is for testing.
 		//startButton.setTextColor(Color.WHITE);
 		//startButton.setText("Start");
@@ -123,7 +120,7 @@ public class MainActivity extends Activity {
 		Button mapButton = new Button(context);
 		//mapButton.setBackgroundColor(Color.argb(255, 255, 165, 0));
 		//mapButton.setText("Map");
-		mapButton.setBackgroundResource(R.drawable.map_button);
+		mapButton.setBackgroundResource(R.drawable.light_map_button);
 		viewArrayList.add(mapButton);
 		
 		//relativeLayout.setBackgroundDrawable(R.drawable.ic_launcher);
@@ -188,9 +185,7 @@ public class MainActivity extends Activity {
 			Log.d("DB_TEST","onClick was called");
 
 			if(view.equals(viewArrayList.get(0))){
-				tagString = "GPS is on.";
-				dbSingleton.dbToLogD();
-				
+				Toast.makeText(context, "Some day when you are good I will make this work.", Toast.LENGTH_LONG).show();
 			} else {
 				context.startActivity(new Intent(context, SpectrumActivity.class));
 			}

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 
+import com.lynchsoftwareengineering.drivespectrum.DBContractClass.GPSEntry;
+
 import dalvik.system.BaseDexClassLoader;
 
 import android.content.ContentValues;
@@ -31,7 +33,7 @@ public class DBSingleton {
 	private static final String INTEGER_TYPE = " INTEGER";
 	private static final String BIGINT_TYPE ="BIGINT";
 	private static final String COMMA_SEP = ",";
-	private static final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME ;
+	private static final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME;
 	private static final String  CHECK_IT_TABLE_NAME_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
 	private static final String SQL_CREATE_ENTRIES =
 	    "CREATE TABLE " + DBContractClass.GPSEntry.TABLE_NAME + " (" +
