@@ -21,11 +21,14 @@ import android.util.Log;
 public class GPSIntentService extends IntentService {
 	public static int MAC_ADDRESS_KEY = 0;
 	public static int FILE_PATH_KEY=1;
+	public static int MIN_SPEED_MPS = 2;//3
+	public static int MAX_TIME_OUT_TIME = 30000;
 	LocationManager locationManager;
 	DBSingleton dbSingleton ;
 	CustomLocationListioner customLocationListioner;
 	String macAddressString;
 	String filePathString;
+	Long timeLong;
 	public GPSIntentService() {
 		super("GPDIntrentService");
 	}
@@ -69,8 +72,12 @@ public class GPSIntentService extends IntentService {
 			if (dbSingleton == null){
 				getDBSingleton();
 			}
-			dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),System.currentTimeMillis());
-			Log.d("Service", "GPS data send to  database."+location.toString());
+			if (location.getSpeed()>MIN_SPEED_MPS   ){
+					int boolInt = (timeLong== null || ((System.currentTimeMillis() - timeLong))>GPSIntentService.MAX_TIME_OUT_TIME )? 0 : 1;// sqlight has no boolean type. Docs say to use Integer 1 or 0
+					dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),System.currentTimeMillis(), boolInt); // 0 true 1 false  
+					Log.d("Service", "GPS data send to  database."+location.toString());
+					timeLong = System.currentTimeMillis();
+			}
 		}
 
 		@Override

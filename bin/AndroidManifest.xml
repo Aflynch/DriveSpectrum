@@ -19,7 +19,8 @@
         <service android:name=".GPSIntentService" />            
         <activity
             android:name="com.lynchsoftwareengineering.drivespectrum.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +29,8 @@
         </activity>
         <activity
             android:name="com.lynchsoftwareengineering.drivespectrum.SpectrumActivity"
-            android:label="@string/title_activity_spectrum_view" >
+            android:label="@string/title_activity_spectrum_view" 
+            android:screenOrientation="portrait">
         </activity>
     </application>
 

@@ -44,6 +44,7 @@ public class SpectrumActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		context = this;
 		getScreenSize();
+		setUpDatabase();
 		initCheckDB();
 		prepData();
 		setContentView(buildLayout()); // Array problems here
@@ -53,38 +54,40 @@ public class SpectrumActivity extends Activity {
 	
 	private void prepData() {/* Really much of this needs to be changed. This is just the first build. This will be on the the first system I will come back to look over after my first demo.*/
 		
-		setUpDatabase();  // Getting instance of SBSingleton.
+		//setUpDatabase();  // Getting instance of SBSingleton.
 		
 		//ArrayList<String> stringArrayList = getArrayListStringGPSDataAndSetStartMaxAndMinValues();// uses String.split to pull the data out in to datatypes 
 		//then sets the base max and min values (lat, lon, and speed). 
 		
 		//33.97941432#-84.01260397#30.1#1396312154436#178.0
 		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
-		ArrayList<String> stringArrayList = new ArrayList<String>();
-
-		stringArrayList = getArrayListStringGPSDataAndSetStartMaxAndMinValues();
+		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
+		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
 		
-		findMaxAndMinValues(stringArrayList);// does what it sounds like
+		findMaxAndMinValues(pointTimeArrayList);// does what it sounds like
+		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
 
-		pointTimeArrayList = getRelivePointArrayList(stringArrayList);
+		this.pointTimeArrayList = getRelivePointArrayList(pointTimeArrayList);
+		Log.d("Running",  "pointTimeArrayList count = " +this.pointTimeArrayList.size() );
 	}
 
-	private void findMaxAndMinValues(ArrayList<String> stringArrayList) {
+	private void findMaxAndMinValues(ArrayList<PointTime> pointTimeArrayList) {
 		//latitude N > 0
 		//latitude S < 0		
 		//longitude W is < 0
 		//longitude E is > 0
 		
 		// reread first index. I know it was just easier for testing. 
-		int arraylistSizeInt = stringArrayList.size()-1;
+		int arraylistSizeInt = pointTimeArrayList.size()-1;
 		for(int i  = 0; i <arraylistSizeInt; i++){
-			String[] gpsRowDateStringArray = stringArrayList.get(i).split("#");
-			String[] oneGPSRowDataStringArray = stringArrayList.get(i+1).split("#");
-			double latitudeDouble = Double.parseDouble(gpsRowDateStringArray[0]);
-			double longitudeDouble = Double.parseDouble(gpsRowDateStringArray[1]);
-			double speedDouble = Double.parseDouble(gpsRowDateStringArray[2]);
+			
+			PointTime pointTime = pointTimeArrayList.get(i);
+			PointTime onePointTime = pointTimeArrayList.get(i+1);
+			double latitudeDouble = pointTime.getLatDouble();
+			double longitudeDouble = pointTime.getLonDouble();
+			double speedDouble = pointTime.getSpeedMPS();
 		//	if (!oneGPSRowDataStringArray[3].equals("0.0") || !gpsRowDateStringArray[3].equals("0.0")){
-			if ((Long.parseLong(oneGPSRowDataStringArray[3]) -Long.parseLong( gpsRowDateStringArray[3]))<30000){
+			if ((onePointTime.getTimeInMillsLong() -pointTime.getTimeInMillsLong())<GPSIntentService.MAX_TIME_OUT_TIME){
 				if( latitudeDouble> latitudeMaxDouble){
 					latitudeMaxDouble = latitudeDouble;	
 				}else if(latitudeDouble < latitudeMinDouble){
@@ -108,10 +111,10 @@ public class SpectrumActivity extends Activity {
 		Log.d("Data Test", ""+((maxSpeedDouble*60)*60)/1000);
 	}
 
-	private ArrayList<String> getArrayListStringGPSDataAndSetStartMaxAndMinValues() {
-		ArrayList<String> stringArraylist = dbSingleton.listAllFromDB();
-		if (stringArraylist.size() == 0){
-			return stringArraylist;// need to back at this latter and see if the return null still work
+	private ArrayList<PointTime> getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues() {
+		ArrayList<PointTime> pointTimeArraylist = dbSingleton.listAllFromDB();
+		if (pointTimeArraylist.size() == 0){
+			return pointTimeArraylist;// need to back at this latter and see if the return null still work
 		}
 		
 //		ArrayList<String> stringArraylist = new ArrayList<String>();
@@ -121,14 +124,13 @@ public class SpectrumActivity extends Activity {
 //		for(String string: stringArraylist){
 //			Log.d("running", string);
 //		}
-		
-		String[] baseGPSRowStringArray = stringArraylist.get(0).split("#");
-		latitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[0]);
+		PointTime pointTime = pointTimeArraylist.get(0);
+		latitudeMaxDouble = pointTime.getLatDouble();
 		latitudeMinDouble = latitudeMaxDouble;
-		longitudeMaxDouble = Double.parseDouble(baseGPSRowStringArray[1]);
+		longitudeMaxDouble = pointTime.getLonDouble();
 		longitudeMinDouble = longitudeMaxDouble;
-		maxSpeedDouble = Double.parseDouble(baseGPSRowStringArray[2]);
-		return stringArraylist;
+		maxSpeedDouble = pointTime.getSpeedMPS();
+		return pointTimeArraylist;
 	}
 
 	private void setUpDatabase() {
@@ -140,7 +142,7 @@ public class SpectrumActivity extends Activity {
 		filePathString = file.getAbsolutePath();
 	}
 
-	private ArrayList<PointTime> getRelivePointArrayList(ArrayList<String> stringArrayList) {
+	private ArrayList<PointTime> getRelivePointArrayList(ArrayList<PointTime> pointTimeArrayList) {
 		Location middleLocation = new Location(LOCATION_SERVICE);
 		Location minLocation = new Location(LOCATION_SERVICE);
 		Location maxLocation = new Location(LOCATION_SERVICE);
@@ -172,11 +174,9 @@ public class SpectrumActivity extends Activity {
 		minLocation.setLongitude(longitudeMinDouble);
 		minLocation.setLatitude(latitudeMaxDouble);///testing!!!!!
 		maxLocation = null;
-		ArrayList<PointTime> pointTimeArrayList = new ArrayList<PointTime>();
-		for(String string: stringArrayList){
-			String[] gpsRowStringArray = string.split("#");
-			double latitudeDouble = Double.parseDouble(gpsRowStringArray[0]);
-			double longitudeDouble = Double.parseDouble(gpsRowStringArray[1]);// might be a problem here
+		for(PointTime pointTime : pointTimeArrayList){
+			double latitudeDouble = pointTime.getLatDouble();
+			double longitudeDouble = pointTime.getLonDouble();// might be a problem here
 			
 			location.setLatitude(latitudeDouble);
 			location.setLongitude(longitudeMinDouble);
@@ -185,7 +185,11 @@ public class SpectrumActivity extends Activity {
 			location.setLatitude(latitudeMaxDouble);////testing!!!!
 			location.setLongitude(longitudeDouble);
 			float distanceXInMetersFloat = minLocation.distanceTo(location);
-			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
+			pointTime.set(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt), convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt));
+//			new PointTime(xInt, yInt, speedMPS, bearingFloat, timeInMillsLong, macAddressLong, routeString);// just chagned PointTime object!!! things need to be fixed. 
+//			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
+
+//	  pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
 		}
 		return pointTimeArrayList;
 	}
@@ -367,7 +371,7 @@ public class SpectrumActivity extends Activity {
 				pointTime2 = pointTimeArrayList.get(i+1);
 				long timeLong = pointTime.getTimeInMillsLong();
 				long timeLong2 = pointTime2.getTimeInMillsLong();
-				if ( (timeLong2 -timeLong)< 30000 && pointTime.speedMPS >4 ){
+				if ( (timeLong2 -timeLong)< GPSIntentService.MAX_TIME_OUT_TIME && pointTime.speedMPS >GPSIntentService.MIN_SPEED_MPS ){
 					int colorInt =( (int)(255*(pointTime.speedMPS/ maxSpeedDouble)));
 					paint.setColor(Color.argb(255,255-colorInt,colorInt,0));
 //				canvas.drawLine(0, 0, 400, 400, paint);

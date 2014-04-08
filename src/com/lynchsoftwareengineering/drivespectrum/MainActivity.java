@@ -77,8 +77,8 @@ public class MainActivity extends Activity {
 		intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wInfo.getMacAddress());
 		intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
 		startService(intent);
-		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
-		ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
+	//	DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
+	//	ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
 		wifiManager =null;
 		wInfo= null;
 		//test
