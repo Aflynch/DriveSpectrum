@@ -6,6 +6,8 @@ import java.util.Dictionary;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
+import com.lynchsoftwareengineering.drivespectrum.DBSingleton.DataFilter;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -54,6 +56,7 @@ public class SpectrumActivity extends Activity {
 	
 	private void prepData() {/* Really much of this needs to be changed. This is just the first build. This will be on the the first system I will come back to look over after my first demo.*/
 		
+		
 		//setUpDatabase();  // Getting instance of SBSingleton.
 		
 		//ArrayList<String> stringArrayList = getArrayListStringGPSDataAndSetStartMaxAndMinValues();// uses String.split to pull the data out in to datatypes 
@@ -62,6 +65,10 @@ public class SpectrumActivity extends Activity {
 		//33.97941432#-84.01260397#30.1#1396312154436#178.0
 		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
 		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
+		pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
+		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
+		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
+		//Testing changes
 		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
 		
 		findMaxAndMinValues(pointTimeArrayList);// does what it sounds like
@@ -87,7 +94,7 @@ public class SpectrumActivity extends Activity {
 			double longitudeDouble = pointTime.getLonDouble();
 			double speedDouble = pointTime.getSpeedMPS();
 		//	if (!oneGPSRowDataStringArray[3].equals("0.0") || !gpsRowDateStringArray[3].equals("0.0")){
-			if ((onePointTime.getTimeInMillsLong() -pointTime.getTimeInMillsLong())<GPSIntentService.MAX_TIME_OUT_TIME){
+		//	if ((onePointTime.getTimeInMillsLong() -pointTime.getTimeInMillsLong())<GPSIntentService.MAX_TIME_OUT_TIME){// should not be  needed
 				if( latitudeDouble> latitudeMaxDouble){
 					latitudeMaxDouble = latitudeDouble;	
 				}else if(latitudeDouble < latitudeMinDouble){
@@ -102,7 +109,7 @@ public class SpectrumActivity extends Activity {
 					maxSpeedDouble = speedDouble;
 				}
 		//	}
-			}
+			//}
 		}
 		Log.d("Data Test", ""+latitudeMinDouble);
 		Log.d("Data Test", ""+latitudeMaxDouble);
@@ -116,7 +123,7 @@ public class SpectrumActivity extends Activity {
 		if (pointTimeArraylist.size() == 0){
 			return pointTimeArraylist;// need to back at this latter and see if the return null still work
 		}
-		
+		pointTimeArraylist = MakeTestData.getTestPointTimeArrayList(0, 0, 0);// Testing change 
 //		ArrayList<String> stringArraylist = new ArrayList<String>();
 //		stringArraylist.add("33.97941432#-84.01260397#30.1#1396312154436#178.0");
 //		stringArraylist.add("33.97941432#-80.01260397#30.1#1396312154436#178.0");
@@ -186,7 +193,7 @@ public class SpectrumActivity extends Activity {
 			location.setLongitude(longitudeDouble);
 			float distanceXInMetersFloat = minLocation.distanceTo(location);
 			pointTime.set(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt), convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt));
-//			new PointTime(xInt, yInt, speedMPS, bearingFloat, timeInMillsLong, macAddressLong, routeString);// just chagned PointTime object!!! things need to be fixed. 
+//			new PointTime(xInt, yInt, speedMPSFloat, bearingFloat, timeInMillsLong, macAddressString, routeString);// just chagned PointTime object!!! things need to be fixed. 
 //			pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
 
 //	  pointTimeArrayList.add(new PointTime(convetDistcanceToPixels(distanceXInMetersFloat, viewWidthInt)/*demo offset  50*/, convetDistcanceToPixels(distanceYInMetersFloat, viewWidthInt), Float.parseFloat(gpsRowStringArray[2]),Long.parseLong( gpsRowStringArray[3])));
@@ -239,7 +246,9 @@ public class SpectrumActivity extends Activity {
 
 
 	private void initCheckDB() {
-		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);// No check need new version :)
+		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);//  No check need new version :)
+		//DBSingleton.DataFilter dateFilter = dbSingleton.new DataFilter();
+
 	}
 
 	private void getScreenSize(){
@@ -371,8 +380,9 @@ public class SpectrumActivity extends Activity {
 				pointTime2 = pointTimeArrayList.get(i+1);
 				long timeLong = pointTime.getTimeInMillsLong();
 				long timeLong2 = pointTime2.getTimeInMillsLong();
-				if ( (timeLong2 -timeLong)< GPSIntentService.MAX_TIME_OUT_TIME && pointTime.speedMPS >GPSIntentService.MIN_SPEED_MPS ){
-					int colorInt =( (int)(255*(pointTime.speedMPS/ maxSpeedDouble)));
+				//if ( (timeLong2 -timeLong)< GPSIntentService.MAX_TIME_OUT_TIME && pointTime.speedMPS >GPSIntentService.MIN_SPEED_MPS ){
+				if(pointTime.getRouteString().equals(pointTime2.getRouteString())){ //Testing change
+					int colorInt =( (int)(255*(pointTime.speedMPSFloat/ maxSpeedDouble)));
 					paint.setColor(Color.argb(255,255-colorInt,colorInt,0));
 //				canvas.drawLine(0, 0, 400, 400, paint);
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);

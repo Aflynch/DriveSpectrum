@@ -1,42 +1,58 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
 import android.graphics.Point;
+import android.util.Log;
 
-public class PointTime extends Point {// lenght -15,+5 , 
+public class PointTime extends Point implements Comparable<PointTime > {// lenght -15,+5 , 
 	public String routeString;
 	public Double latDouble, lonDouble;
 	public long timeInMillsLong;
-	public long  macAddressLong;
-	public float speedMPS;
+	public String  macAddressString;
+	public float speedMPSFloat;
 	public float bearingFloat;
 	public PointTime(){
 		
 	}
-	public PointTime(int xInt,int yInt,float speedMPS, float bearingFloat, long  timeInMillsLong, long macAddressLong, String routeString){
+	public PointTime(int xInt,int yInt,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString){
 		super.set(xInt, yInt);
-		this.speedMPS = speedMPS;
+		this.speedMPSFloat = speedMPSFloat;
 		this.bearingFloat = bearingFloat;
 		this.timeInMillsLong = timeInMillsLong;
-		this.macAddressLong = macAddressLong;
+		this.macAddressString = macAddressString;
+		this.routeString = routeString;
+	}	
+	public PointTime(double latDouble,double lonDouble,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString){
+		this.latDouble = latDouble;
+		this.lonDouble = lonDouble;
+		this.speedMPSFloat = speedMPSFloat;
+		this.bearingFloat = bearingFloat;
+		this.timeInMillsLong = timeInMillsLong;
+		this.macAddressString = macAddressString;
 		this.routeString = routeString;
 	}
-	public Long getTimeInMillsLong() {
+	
+	@Override
+		public boolean equals(Object o) {
+			PointTime pointTime = (PointTime) o;
+//			Log.d("equals", (pointTime.getTimeInMillsLong() == getTimeInMillsLong())? "true": "false");
+//			Log.d("equals", ""+timeInMillsLong +"  :  "+pointTime.getTimeInMillsLong());
+			return (pointTime.getTimeInMillsLong() == getTimeInMillsLong())? true: false;
+		}	
+	
+	public long getTimeInMillsLong() {
 		return timeInMillsLong;
 	}
 	public void setTimeInMillsLong(Long timeInMillsLong) {
 		this.timeInMillsLong = timeInMillsLong;
 	}
 	public float getSpeedMPS() {
-		return speedMPS;
+		return speedMPSFloat;
 	}
 	public void setSpeedMPS(float speedMPS) {
-		this.speedMPS = speedMPS;
+		this.speedMPSFloat = speedMPS;
 	}
-	public Long getMacAddressLong() {
-		return macAddressLong;
-	}
-	public void setMacAddressLong(Long macAddressLong) {
-		this.macAddressLong = macAddressLong;
+	public String getMacAddressString() {
+		return macAddressString;
 	}
 	public void setTimeInMillsLong(long timeInMillsLong) {
 		this.timeInMillsLong = timeInMillsLong;
@@ -66,8 +82,18 @@ public class PointTime extends Point {// lenght -15,+5 ,
 	public void setBearingFloat(float bearingFloat) {
 		this.bearingFloat = bearingFloat;
 	}
-	public void setMacAddressLong(long macAddressLong) {
-		this.macAddressLong = macAddressLong;
+	public void setMacAddressString(String macAddressString) {
+		this.macAddressString = macAddressString;
+	}
+	@Override
+	public int compareTo(PointTime another) {
+		if (getTimeInMillsLong() <  another.getTimeInMillsLong()){
+			return 1;
+		}else if (getTimeInMillsLong() > another.getTimeInMillsLong()){
+			return -1;
+		}else{
+			return 0;
+		}
 	}
 	
 }

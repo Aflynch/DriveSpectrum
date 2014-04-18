@@ -19,6 +19,7 @@ public final class DBContractClass {
 			public static final String COLUMN_NAME_MAC_ADDRESS = "mac_address";
 			public static final String COLUMN_NAME_NUMBER_OF_AVG = "num_agv";
 			public static final String COLUMN_NAME_ROUTE_NAME= "route_name";
+			public static final String COLUME_NAME_ROUTE_SEQUENCE = "route_sequance";
 ///			public static final Srting COLUMN_NAME_TIME_OUT_BOOL = "TIME _OUT_BOOL";
 			public static final String C0LUMN_NAME_TIME_OUT_BOOL = "TIME_OUT_BOOL";
 			public static final String COLUMN_VERSION_INT = "vertion";
@@ -35,7 +36,7 @@ public final class DBContractClass {
 			public static final String COLUMN_NAME_SPEED = "speed";
 			public static final String COLUMN_NAME_MAC_ADDRESS = "mac_address";
 ///			public static final Srting COLUMN_NAME_TIME_OUT_BOOL = "TIME _OUT_BOOL";
-			public static final String C0LUMN_NAME_TIME_OUT_BOOL = "TIME_OUT_BOOL";
+			public static final String C0LUMN_NAME_TIME_OUT_BOOL = "time_out_bool";
 			public static final String COLUMN_VERSION_INT = "vertion";
 		}
 }
