@@ -23,7 +23,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,7 +37,8 @@ public class SpectrumActivity extends Activity {
 	String filePathString;
 	String macAddressString;
 	double latitudeMaxDouble ,latitudeMinDouble ,longitudeMaxDouble, longitudeMinDouble, maxSpeedDouble, lenghtInMetersLatitudeDouble, lengthInMetersLongitudeDouble;
-	int widthInt;
+	int testIndexInt;
+	int widthInt;	
 	int heightInt;
 	int viewWidthInt;
 	int viewHightInt;
@@ -65,7 +68,7 @@ public class SpectrumActivity extends Activity {
 		//33.97941432#-84.01260397#30.1#1396312154436#178.0
 		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
 		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
-		pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
+		//pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
 		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
 		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
 		//Testing changes
@@ -123,7 +126,7 @@ public class SpectrumActivity extends Activity {
 		if (pointTimeArraylist.size() == 0){
 			return pointTimeArraylist;// need to back at this latter and see if the return null still work
 		}
-		pointTimeArraylist = MakeTestData.getTestPointTimeArrayList(0, 0, 0);// Testing change 
+	//	pointTimeArraylist = MakeTestData.getTestPointTimeArrayList(0, 0, 0);// Testing change 
 //		ArrayList<String> stringArraylist = new ArrayList<String>();
 //		stringArraylist.add("33.97941432#-84.01260397#30.1#1396312154436#178.0");
 //		stringArraylist.add("33.97941432#-80.01260397#30.1#1396312154436#178.0");
@@ -296,11 +299,12 @@ public class SpectrumActivity extends Activity {
 	}
 	
 	private class DrawView extends View{
-		
 		ArrayList<LinePaintDataOject> linePaintDataOjectArrayList = new ArrayList<LinePaintDataOject>();
 		public DrawView(Context context) {
 			super(context);
 			setBackgroundColor(Color.argb(50, 0, 0, 0));
+			SpectrumOnTouchListeneren specturmOnTouchListener = new SpectrumOnTouchListeneren(this);
+			setOnTouchListener(specturmOnTouchListener);
 		//	fillFloatArray();
 		}
 //		
@@ -375,7 +379,7 @@ public class SpectrumActivity extends Activity {
 			//canvas.clipRect(25, 25, 50, 50);
 			paint.setStrokeWidth(3);
 	
-			for (int i = 0; i < arraySizeInt ; i++){
+			for (int i = 0; i < Math.min(arraySizeInt, testIndexInt) ; i++){
 				pointTime = pointTimeArrayList.get(i);
 				pointTime2 = pointTimeArrayList.get(i+1);
 				long timeLong = pointTime.getTimeInMillsLong();
@@ -409,4 +413,18 @@ public class SpectrumActivity extends Activity {
 		
 	}
 
+	public class SpectrumOnTouchListeneren implements OnTouchListener{
+		DrawView drawView;
+		public SpectrumOnTouchListeneren(DrawView drawView) {
+			this.drawView = drawView;
+		}
+
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			testIndexInt+=50;
+			drawView.invalidate();
+			return false;
+		}
+		
+	}
 }

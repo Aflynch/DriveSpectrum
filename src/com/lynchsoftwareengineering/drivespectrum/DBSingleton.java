@@ -40,7 +40,7 @@ public class DBSingleton {
 	private  final String INTEGER_TYPE = " INTEGER ";
 	private  final String BIGINT_TYPE ="BIGINT";
 	private  final String COMMA_SEP = " , ";
-	private  final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME + " WHERE "+DBContractClass.GPSEntry._ID + " < 100";// Testing
+	private  final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME; // + " WHERE "+DBContractClass.GPSEntry._ID + " < 4075 AND "+ DBContractClass.GPSEntry._ID+"> 4050";// Testing
 	private  final String COUNT_ROWS_IN_PGS_TBABLE = "SELECT "+DBContractClass.GPSEntry.COLUMN_NAME_BEARING +" "+ "FROM "+DBContractClass.GPSEntry.TABLE_NAME;
 	private  final String  CHECK_IT_TABLE_NAME_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
 	private  final String SQL_CREATE_GPS_TABLE =
@@ -180,30 +180,6 @@ public class DBSingleton {
 		}
 		db.close();
 	}
-	/*
-	 * Stress ANS  Automatic 
-	 * disorders
-	 * why do 
-	 * visible ways
-	 * most common
-	 * common stress management
-	 * -------
-	 * Micor and micor
-	 * what amonts of calories
-	 * what determaines caloro in take
-	 * what is DRI
-	 * hight vs lower 
-	 * nutriet dincity
-	 * where does glocus come from 
-	 * caristis of complex carbohidrates
-	 * salubla fiber 
-	 * complet and incomplete proteins 
-	 * good fat vs bad
-	 * fat vs water soluble vitamins
-	 * 
-	 * ------
-	 * one more thing 
-	 */
 	
 	private void setUpMaxMinLatLonSpeed(){
 //		PreferenceManager.getDefaultSharedPreferences(context)
@@ -291,6 +267,7 @@ public class DBSingleton {
 			setConvertionForLonAndLat(pointTimeArraylist.get(0).getLatDouble(), pointTimeArraylist.get(0).getLonDouble());
 			// filter Data
 			setReferencePointTime(pointTimeArraylist.get(0));
+			newPointTimeArraylist.add(referencePointTime);
 			indexInt = 0;
 			while(0 <pointTimeArraylist.size()){// ref
 				//inner search to matches inside area 
@@ -299,6 +276,7 @@ public class DBSingleton {
 				}
 				if(referencePointTime == null && pointTimeArraylist.size() > 0){
 					setReferencePointTime(pointTimeArraylist.get(0));
+					newPointTimeArraylist.add(referencePointTime);
 				}
 					innerForLoopFinePointTimeInsideArea(pointTimeArraylist,pointTimeArraylist.get(0));
 			}
@@ -313,10 +291,10 @@ public class DBSingleton {
 				// need change i for the PointTime object that have been removed. Also need to look at the order that they are taken out of the array...s	
 				double latDouble = pointTimeArrayList.get(indexInt).getLatDouble();
 				double lonDouble = pointTimeArrayList.get(indexInt).getLonDouble();
-				if(rangeLatMinDouble< latDouble && rangeLatMaxDouble> latDouble){
+				if(Math.min(rangeLatMinDouble, rangeLatMaxDouble)< latDouble && (Math.max(rangeLatMinDouble, rangeLatMaxDouble)> latDouble)){
 				//	Log.d("Range", "lat = "+ latDouble + " range = min: "+ rangeLatMinDouble + " range = max : "+ rangeLatMaxDouble);
 				//	Log.d("Range","lon = "+ lonDouble + " range = min: "+rangeLonMinDouble+" range = max: "+ rangeLonMaxDouble );
-					if(rangeLonMinDouble< lonDouble && rangeLonMaxDouble > lonDouble){ // need test cases for lon conversion.
+					if(Math.min(rangeLonMinDouble, rangeLonMaxDouble)< lonDouble && Math.max(rangeLonMinDouble, rangeLonMaxDouble) > lonDouble){ // need test cases for lon conversion.
 						Log.d("Running", "is inside range ");
 						groupPointTimeArrayList.add(pointTimeArrayList.get(indexInt));
 					}
@@ -328,6 +306,13 @@ public class DBSingleton {
 				pointTimeArrayList.remove(referencePointTime);
 				referencePointTime = null;
 				indexInt--;
+				if (pointTimeArrayList.size()>0){
+					setReferencePointTime(pointTimeArrayList.get(0));
+				}
+			}else if(groupPointTimeArrayList.size() == 0 && pointTimeArrayList.size()> 0){
+				Log.d("No match",pointTimeArrayList.get(0).toString());
+				pointTimeArrayList.remove(0);
+				setReferencePointTime(pointTimeArrayList.get(0));
 			}
 		}
 		
@@ -340,35 +325,68 @@ public class DBSingleton {
 		}
 		
 		private void processInGroup(ArrayList<PointTime>  groupPointTimeArrayList){
-			Collections.sort(groupPointTimeArrayList, new ComparatorPointTimeByLocation(referencePointTime));// need look into selection by the bearing for one point to an other. So parallel point wish similar bearings are not grouped unless they are really on the same road.
-			for(int i = 0; i < groupPointTimeArrayList.size()-1; i++){
+			int startSizeOfGroupPointTimeArrayList = groupPointTimeArrayList.size();
+			checkForEquality(groupPointTimeArrayList);
+			float[] distanceFloatArray = new float[1];
+			for(PointTime pointTime: groupPointTimeArrayList){
+				Location.distanceBetween(referencePointTime.getLatDouble(), referencePointTime.getLonDouble(), pointTime.getLatDouble(), pointTime.getLonDouble(), distanceFloatArray);
+				Log.d("Compar", "Distance :"+distanceFloatArray[0]+ " Mac : "+pointTime.getMacAddressString());
+			}
+			for(int i = 0; i < groupPointTimeArrayList.size(); i++){
 				//Log.d("Running", " Distance in Km : "+ ComparatorPointTimeByLocation.distance(pointTime.getLatDouble(), pointTime.getLonDouble(), pointTime1.getLatDouble(), pointTime1.getLonDouble()) );
-				if( isInsideBearing(groupPointTimeArrayList.get(i).getBearingFloat(), groupPointTimeArrayList.get(i+1).getBearingFloat())) {
-					if(pointTimeArraylist.indexOf(groupPointTimeArrayList.get(i)) <= indexInt){
-						indexInt--;
-					}
+			//	if( isInsideBearing(referencePointTime.getBearingFloat(), groupPointTimeArrayList.get(i).getBearingFloat())) {
+					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.bearingFloat+" routeName : "+referencePointTime.getRouteString());
+					//Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+groupPointTimeArrayList.get(i).bearingFloat+" routeName : "+ groupPointTimeArrayList.get(i).getRouteString());
+					
+					Location.distanceBetween(referencePointTime.getLatDouble(), referencePointTime.getLonDouble(), groupPointTimeArrayList.get(i).getLatDouble(), groupPointTimeArrayList.get(i).getLonDouble(), distanceFloatArray);
+					if(distanceFloatArray[0]< DataAVGRules.RADIUS_IN_METERS){
+					indexInt = pointTimeArraylist.indexOf(groupPointTimeArrayList.get(i));
 					referencePointTime = groupPointTimeArrayList.get(i);// i -i
 					referencePointTime.setRouteString(routeNameString);
+					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.bearingFloat+" routeName : "+referencePointTime.getRouteString());					
 					// also need to remove PointTime from master arraylist
 					newPointTimeArraylist.add(referencePointTime);
 					pointTimeArraylist.remove(referencePointTime);// need method here to
 					groupPointTimeArrayList.remove(referencePointTime);		
 					i--;// So the count does not move forward  while the size of the array has gotten smaller at the same time. 
-					referencePointTime = groupPointTimeArrayList.get(i+1);// this i is now i++ of what it was before because for the removal of an object from the arraylist
-					referencePointTime.setRouteString(routeNameString);
-					
-
-					Log.d("Range", "XXXXX is inside range and bearing!!!! XXXXXX");
-				}else{
-					setReferencePointTime(groupPointTimeArrayList.get(i+1));
-				}
-				if(i %5 == 0){// every X number of run resort the array from current inedx 
-					Collections.sort(groupPointTimeArrayList, new ComparatorPointTimeByLocation(groupPointTimeArrayList.get(i)));
+					}else{
+						Log.d("out of bounds","Distance out of bounds how the fuck did it get here??");
+						setReferencePointTime(groupPointTimeArrayList.get(i));
+					}
+			//	}else{
+					//Log.d("Range", "inside range but not bearing!!!");// there is a problem what how the bearing are being compared.
+					//setReferencePointTime(groupPointTimeArrayList.get(i+1));
+			//	}
+				if(true){ //i %5 == 0){// every X number of run resort the array from current inedx 
+					//(groupPointTimeArrayList);
+					Collections.sort(groupPointTimeArrayList, new ComparatorPointTimeByLocation(referencePointTime));
 				}
 			}
-			
+			//if non of the group get added then rest the index to 0 if 0 is a valid index.
+			if(startSizeOfGroupPointTimeArrayList == groupPointTimeArrayList.size()&& pointTimeArraylist.size() > 0){
+				indexInt =0;
+				if(pointTimeArraylist.get(0).equals(referencePointTime)){
+					pointTimeArraylist.remove(referencePointTime);
+				}
+				if(pointTimeArraylist.size()>0){
+					setReferencePointTime(pointTimeArraylist.get(0));
+				}
+			}
 			//Log.d("Running", "------ this is a new line ------");
-			 
+			groupPointTimeArrayList.clear();
+		}
+		private void checkForEquality(
+				ArrayList<PointTime> groupPointTimeArrayList) {
+			ArrayList<PointTime> clone = (ArrayList<PointTime>) groupPointTimeArrayList.clone();
+			Collections.sort(groupPointTimeArrayList, new ComparatorPointTimeByLocation(referencePointTime));// need look into selection by the bearing for one point to an other. So parallel point wish similar bearings are not grouped unless they are really on the same road.
+			boolean isTheSame = true;
+			for(int i = 0; i < clone.size(); i++){
+				Log.d("clone", "ArrayList: "+groupPointTimeArrayList.get(i)+ "  clone  : "+ clone.get(i));
+				if(groupPointTimeArrayList.get(i) != clone.get(i)){
+					isTheSame = false;
+				}
+			}
+			Log.d("clone", (isTheSame)?"Is the same!": "Not the same");
 		}
 		
 		private boolean isInsideBearing(float bearingFloat, float oneBearingFloat){ // this should be tested.... 
@@ -378,7 +396,8 @@ public class DBSingleton {
 			bearingFloat +=offSetFloat;
 			bearingFloat -= 180;
 			bearingFloat = Math.abs(bearingFloat);
-			return  (bearingFloat >(90-DataAVGRules.BEARING_RANGE_DEGREES_TOLERANCE) && bearingFloat < (90+DataAVGRules.BEARING_RANGE_DEGREES_TOLERANCE))? true: false;
+			boolean answerBool = (bearingFloat >(90-DataAVGRules.BEARING_RANGE_DEGREES_TOLERANCE) && bearingFloat < (90+DataAVGRules.BEARING_RANGE_DEGREES_TOLERANCE))? true: false;
+			return answerBool;
 		}
 		private void setMinMaxLatLon(Double latDouble, Double lonDouble) {
 			// find lat lon offSet
@@ -387,32 +406,32 @@ public class DBSingleton {
 			 
 		// Warning need to build case for place near 0... 
 			if(lonDouble > 0){
-				rangeLatMaxDouble = latDouble- latOffsetDouble;
+				rangeLatMaxDouble = latDouble-latOffsetDouble;
 				rangeLatMinDouble = latDouble+latOffsetDouble;
 			}else{
 				rangeLatMaxDouble = latDouble+latOffsetDouble;
 				rangeLatMinDouble = latDouble-latOffsetDouble;				
 			}
-			Log.d("Running", "lat min: "+ rangeLatMinDouble + " lat max: "+ rangeLatMaxDouble);
+			Log.d("Running", "lat min : "+ rangeLatMinDouble + " lat max: "+ rangeLatMaxDouble);
 		// log
 				if (lonDouble > 0){
 					rangeLonMaxDouble =  lonDouble + lonOffsetDouble;
 					rangeLonMinDouble = lonDouble -  lonOffsetDouble;
 				}else{
-					rangeLonMaxDouble =  lonDouble - lonOffsetDouble;
-					rangeLonMinDouble = lonDouble + lonOffsetDouble;
+					rangeLonMinDouble =  lonDouble - lonOffsetDouble;
+					rangeLonMaxDouble = lonDouble + lonOffsetDouble;
 				}
 			Log.d("Running", "lon min: "+ rangeLonMinDouble + " max: "+ rangeLonMaxDouble);
+			DataAVGRules.findLatLonRange(rangeLatMinDouble, rangeLonMinDouble, rangeLatMaxDouble, rangeLonMaxDouble);
 		}
 		
 		private void setConvertionForLonAndLat(double latDouble , double logDouble){
-//		    * Mathematical expression: Length of a degree of longitude = cos
-//		    		(latitude) * 111.325 kilometers
-//		    		    * Example: 1° of longitude at 40° N = cos (40°) * 111.325
-//		    		    * Since the cosine of 40° is 0.7660, the length of one degree is
-//		    		85.28 kilometers.
-			latConvertDegreeInToMetersDouble = 111034; // there are 111034 meters in one degree lat
-			logConvetDegreeInToMetersDouble =  Math.cos(latDouble) *111325;
+			float[] latDistanceFloatArray = new float[3];
+			float[] lonDistanceFloatArray = new float[3];
+			Location.distanceBetween(latDouble, logDouble, latDouble+1, logDouble, latDistanceFloatArray);
+			Location.distanceBetween(latDouble, logDouble, latDouble, logDouble+1, lonDistanceFloatArray);
+			latConvertDegreeInToMetersDouble = latDistanceFloatArray[0];
+			logConvetDegreeInToMetersDouble =  lonDistanceFloatArray[0];
 		}
 	}
 }

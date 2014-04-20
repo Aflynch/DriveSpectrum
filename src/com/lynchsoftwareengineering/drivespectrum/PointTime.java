@@ -86,6 +86,11 @@ public class PointTime extends Point implements Comparable<PointTime > {// lengh
 		this.macAddressString = macAddressString;
 	}
 	@Override
+		public String toString() {
+			return "Time: "+getTimeInMillsLong();//+ " Lat: "+getLatDouble()+" Lon: "+ getLonDouble();
+		}
+	
+	@Override
 	public int compareTo(PointTime another) {
 		if (getTimeInMillsLong() <  another.getTimeInMillsLong()){
 			return 1;
