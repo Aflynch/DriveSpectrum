@@ -40,7 +40,7 @@ public class DBSingleton {
 	private  final String INTEGER_TYPE = " INTEGER ";
 	private  final String BIGINT_TYPE ="BIGINT";
 	private  final String COMMA_SEP = " , ";
-	private  final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME; // + " WHERE "+DBContractClass.GPSEntry._ID + " < 4075 AND "+ DBContractClass.GPSEntry._ID+"> 4050";// Testing
+	private  final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME;// + " WHERE "+DBContractClass.GPSEntry._ID + " < 5000 AND "+ DBContractClass.GPSEntry._ID+"> 4050";// Testing
 	private  final String COUNT_ROWS_IN_PGS_TBABLE = "SELECT "+DBContractClass.GPSEntry.COLUMN_NAME_BEARING +" "+ "FROM "+DBContractClass.GPSEntry.TABLE_NAME;
 	private  final String  CHECK_IT_TABLE_NAME_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
 	private  final String SQL_CREATE_GPS_TABLE =
@@ -115,6 +115,7 @@ public class DBSingleton {
 				 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
 				 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
 				 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+				 	pointTime.setNumberOfAVGsInt(1);// NEED TO NOT BE HARD CODED WARNING!!! 
 				 	
 				 	arrayListPointTime.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
 			 }while(cursor.moveToNext());
@@ -335,7 +336,7 @@ public class DBSingleton {
 			for(int i = 0; i < groupPointTimeArrayList.size(); i++){
 				//Log.d("Running", " Distance in Km : "+ ComparatorPointTimeByLocation.distance(pointTime.getLatDouble(), pointTime.getLonDouble(), pointTime1.getLatDouble(), pointTime1.getLonDouble()) );
 			//	if( isInsideBearing(referencePointTime.getBearingFloat(), groupPointTimeArrayList.get(i).getBearingFloat())) {
-					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.bearingFloat+" routeName : "+referencePointTime.getRouteString());
+					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.getBearingFloat()+" routeName : "+referencePointTime.getRouteString());
 					//Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+groupPointTimeArrayList.get(i).bearingFloat+" routeName : "+ groupPointTimeArrayList.get(i).getRouteString());
 					
 					Location.distanceBetween(referencePointTime.getLatDouble(), referencePointTime.getLonDouble(), groupPointTimeArrayList.get(i).getLatDouble(), groupPointTimeArrayList.get(i).getLonDouble(), distanceFloatArray);
@@ -343,7 +344,7 @@ public class DBSingleton {
 					indexInt = pointTimeArraylist.indexOf(groupPointTimeArrayList.get(i));
 					referencePointTime = groupPointTimeArrayList.get(i);// i -i
 					referencePointTime.setRouteString(routeNameString);
-					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.bearingFloat+" routeName : "+referencePointTime.getRouteString());					
+					Log.d("path", "Path:"+groupPointTimeArrayList.size()+" Bearing : "+referencePointTime.getBearingFloat()+" routeName : "+referencePointTime.getRouteString());					
 					// also need to remove PointTime from master arraylist
 					newPointTimeArraylist.add(referencePointTime);
 					pointTimeArraylist.remove(referencePointTime);// need method here to

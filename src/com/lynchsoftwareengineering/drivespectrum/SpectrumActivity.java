@@ -71,6 +71,7 @@ public class SpectrumActivity extends Activity {
 		//pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
 		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
 		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
+		pointTimeArrayList = DataAVGRules.computAverageForGPSData(pointTimeArrayList);
 		//Testing changes
 		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
 		
@@ -386,7 +387,7 @@ public class SpectrumActivity extends Activity {
 				long timeLong2 = pointTime2.getTimeInMillsLong();
 				//if ( (timeLong2 -timeLong)< GPSIntentService.MAX_TIME_OUT_TIME && pointTime.speedMPS >GPSIntentService.MIN_SPEED_MPS ){
 				if(pointTime.getRouteString().equals(pointTime2.getRouteString())){ //Testing change
-					int colorInt =( (int)(255*(pointTime.speedMPSFloat/ maxSpeedDouble)));
+					int colorInt =( (int)(255*(pointTime.getSpeedMPSFloat()/ maxSpeedDouble)));
 					paint.setColor(Color.argb(255,255-colorInt,colorInt,0));
 //				canvas.drawLine(0, 0, 400, 400, paint);
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
@@ -427,4 +428,5 @@ public class SpectrumActivity extends Activity {
 		}
 		
 	}
+	
 }

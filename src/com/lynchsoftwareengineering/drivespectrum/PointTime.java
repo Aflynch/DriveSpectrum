@@ -4,12 +4,13 @@ import android.graphics.Point;
 import android.util.Log;
 
 public class PointTime extends Point implements Comparable<PointTime > {// lenght -15,+5 , 
-	public String routeString;
-	public Double latDouble, lonDouble;
-	public long timeInMillsLong;
-	public String  macAddressString;
-	public float speedMPSFloat;
-	public float bearingFloat;
+	private String routeString;
+	private Double latDouble, lonDouble;
+	private long timeInMillsLong;
+	private String  macAddressString;
+	private float speedMPSFloat;
+	private float bearingFloat;
+	private int numberOfAVGsInt;
 	public PointTime(){
 		
 	}
@@ -20,6 +21,7 @@ public class PointTime extends Point implements Comparable<PointTime > {// lengh
 		this.timeInMillsLong = timeInMillsLong;
 		this.macAddressString = macAddressString;
 		this.routeString = routeString;
+		this.numberOfAVGsInt = 1;
 	}	
 	public PointTime(double latDouble,double lonDouble,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString){
 		this.latDouble = latDouble;
@@ -29,8 +31,34 @@ public class PointTime extends Point implements Comparable<PointTime > {// lengh
 		this.timeInMillsLong = timeInMillsLong;
 		this.macAddressString = macAddressString;
 		this.routeString = routeString;
+		this.numberOfAVGsInt = 1;
+	}
+	public PointTime(double latDouble,double lonDouble,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString, int numberOfAVGsInt){
+		this.latDouble = latDouble;
+		this.lonDouble = lonDouble;
+		this.speedMPSFloat = speedMPSFloat;
+		this.bearingFloat = bearingFloat;
+		this.timeInMillsLong = timeInMillsLong;
+		this.macAddressString = macAddressString;
+		this.routeString = routeString;
+		this.numberOfAVGsInt = numberOfAVGsInt;
 	}
 	
+	@Override
+	public String toString() {
+		return "Time: "+getTimeInMillsLong();//+ " Lat: "+getLatDouble()+" Lon: "+ getLonDouble();
+	}
+	
+	@Override
+	public int compareTo(PointTime another) {
+		if (getTimeInMillsLong() <  another.getTimeInMillsLong()){
+			return 1;
+		}else if (getTimeInMillsLong() > another.getTimeInMillsLong()){
+			return -1;
+		}else{
+			return 0;
+		}
+	}
 	@Override
 		public boolean equals(Object o) {
 			PointTime pointTime = (PointTime) o;
@@ -85,20 +113,17 @@ public class PointTime extends Point implements Comparable<PointTime > {// lengh
 	public void setMacAddressString(String macAddressString) {
 		this.macAddressString = macAddressString;
 	}
-	@Override
-		public String toString() {
-			return "Time: "+getTimeInMillsLong();//+ " Lat: "+getLatDouble()+" Lon: "+ getLonDouble();
-		}
-	
-	@Override
-	public int compareTo(PointTime another) {
-		if (getTimeInMillsLong() <  another.getTimeInMillsLong()){
-			return 1;
-		}else if (getTimeInMillsLong() > another.getTimeInMillsLong()){
-			return -1;
-		}else{
-			return 0;
-		}
+	public float getSpeedMPSFloat() {
+		return speedMPSFloat;
+	}
+	public void setSpeedMPSFloat(float speedMPSFloat) {
+		this.speedMPSFloat = speedMPSFloat;
+	}
+	public int getNumberOfAVGsInt() {
+		return numberOfAVGsInt;
+	}
+	public void setNumberOfAVGsInt(int numberOfAVGsInt) {
+		this.numberOfAVGsInt = numberOfAVGsInt;
 	}
 	
 }
