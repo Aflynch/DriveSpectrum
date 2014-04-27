@@ -97,6 +97,9 @@ public class DatabaseSingleton {
 	public int getDbOffSetInt() {
 		return dbOffSetInt;
 	}
+
+
+
 	
 	
 }

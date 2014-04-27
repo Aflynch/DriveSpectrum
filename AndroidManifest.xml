@@ -16,7 +16,8 @@
         android:icon="@drawable/log_try"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <service android:name=".GPSIntentService" />            
+        <service android:name=".GPSIntentService" />    
+        <service android:name=".BuildPathAndAVGTableIntentService"/>        
         <activity
             android:name="com.lynchsoftwareengineering.drivespectrum.MainActivity"
             android:label="@string/app_name"

@@ -34,16 +34,25 @@ import android.widget.Toast;
  * as such.  
  */ 
 public class DBSingleton {
-	private  final String DB_FILE_NAME  = "thebests";
-	private  final String TEXT_TYPE = " TEXT";
-	private  final String REAL_TYPE = " REAL";
-	private  final String INTEGER_TYPE = " INTEGER ";
-	private  final String BIGINT_TYPE ="BIGINT";
-	private  final String COMMA_SEP = " , ";
-	private  final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME;// + " WHERE "+DBContractClass.GPSEntry._ID + " < 5000 AND "+ DBContractClass.GPSEntry._ID+"> 4050";// Testing
-	private  final String COUNT_ROWS_IN_PGS_TBABLE = "SELECT "+DBContractClass.GPSEntry.COLUMN_NAME_BEARING +" "+ "FROM "+DBContractClass.GPSEntry.TABLE_NAME;
-	private  final String  CHECK_IT_TABLE_NAME_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
-	private  final String SQL_CREATE_GPS_TABLE =
+	public static final int ALL_NEW_DBS = 1;
+	public static final int MADE_PATH_AND_AVG_TABLES = 2;
+	public static final int MADE_AVG_TABLE = 3;
+	public static final int ALL_TABLES_FOUND = 10;
+	private final String SELECT_ID = "SELECT "+DBContractClass.GPSEntry._ID;
+	private final String DB_FILE_NAME  = "thebests";
+	private final String TEXT_TYPE = " TEXT";
+	private final String REAL_TYPE = " REAL";
+	private final String INTEGER_TYPE = " INTEGER ";
+	private final String BIGINT_TYPE ="BIGINT";
+	private final String COMMA_SEP = " , ";
+	private final String SELECT_ALL_FROM = "SELECT * FROM ";
+	private final String SELECCT_ALL_FROM_AVG = "SELECT * FROM "+DBContractClass.AVGGPSEntry.TABLE_NAME;
+	private final String SELECT_START = "SELECT * FROM "+DBContractClass.GPSEntry.TABLE_NAME;// + " WHERE "+DBContractClass.GPSEntry._ID + " < 5000 AND "+ DBContractClass.GPSEntry._ID+"> 4050";// Testing
+	private final String COUNT_ROWS_IN_PGS_TBABLE = "SELECT "+DBContractClass.GPSEntry.COLUMN_NAME_BEARING +" "+ "FROM "+DBContractClass.GPSEntry.TABLE_NAME;
+	private final String CHECK_IF_MAIN_TABLE_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.GPSEntry.TABLE_NAME +"'"; 	 
+	private final String CHECK_IF_PATH_TABLE_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.PathGPSEntry.TABLE_NAME +"'"; 	 
+	private final String CHECK_IF_AVG_TABLE_EXISTS = "SELECT DISTINCT  tbl_name FROM sqlite_master WHERE tbl_name = '"+DBContractClass.AVGGPSEntry.TABLE_NAME +"'"; 	 
+	private final String SQL_CREATE_GPS_TABLE =
 	    "CREATE TABLE " + DBContractClass.GPSEntry.TABLE_NAME + " (" +
 	    DBContractClass.GPSEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 	    DBContractClass.GPSEntry.COLUMN_NAME_BEARING + REAL_TYPE + COMMA_SEP +
@@ -66,11 +75,22 @@ public class DBSingleton {
 		    DBContractClass.AVGGPSEntry.COLUMN_NAME_NUMBER_OF_AVG + REAL_TYPE+COMMA_SEP+
 		    DBContractClass.AVGGPSEntry.COLUMN_NAME_ROUTE_NAME+TEXT_TYPE+COMMA_SEP+
 		    DBContractClass.AVGGPSEntry.COLUME_NAME_ROUTE_SEQUENCE+ INTEGER_TYPE+COMMA_SEP+
-		  //  DBContractClass.GPSEntry.C0LUMN_NAME_TIME_OUT_BOOL+ INTEGER_TYPE+ COMMA_SEP+
 		    DBContractClass.GPSEntry.COLUMN_VERSION_INT + INTEGER_TYPE +")";
+	private  final String SQL_CREATE_PATHGPS_TABLE =
+		    "CREATE TABLE " + DBContractClass.PathGPSEntry.TABLE_NAME + " (" +
+		    DBContractClass.PathGPSEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_BEARING + REAL_TYPE + COMMA_SEP +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_LAT + REAL_TYPE + COMMA_SEP +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_LON + REAL_TYPE + COMMA_SEP +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_MAC_ADDRESS + TEXT_TYPE + COMMA_SEP +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_SPEED + REAL_TYPE + COMMA_SEP +
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_TIME + TEXT_TYPE+ COMMA_SEP+
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_NUMBER_OF_AVG + REAL_TYPE+COMMA_SEP+
+		    DBContractClass.PathGPSEntry.COLUMN_NAME_ROUTE_NAME+TEXT_TYPE+COMMA_SEP+
+		    DBContractClass.PathGPSEntry.COLUME_NAME_ROUTE_SEQUENCE+ INTEGER_TYPE+COMMA_SEP+
+		    DBContractClass.PathGPSEntry.COLUMN_VERSION_INT + INTEGER_TYPE +")";
 	
-	private static final String SQL_DELETE_ENTRIES =
-	    "DROP TABLE IF EXISTS " ;
+	private static final String SQL_DELETE_ENTRIES ="DROP TABLE IF EXISTS " ;
 	private static DBSingleton dBSingleton;
 	private String macAddressString;
 	private String filePathString;
@@ -86,14 +106,14 @@ public class DBSingleton {
 	public int getNumberOfRowsFromGPSTable(){
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 		Cursor  cursor = db.rawQuery(SELECT_START,null);
-		int countInt = cursor.getColumnCount();
+		int countInt = cursor.getCount();
 		cursor.close();
 		db.close();
 		return countInt;
 	}
-	public ArrayList<PointTime> listAllFromDB(){
+	public ArrayList<PointTime> listAllFromAVGTable(){
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
-		Cursor  cursor = db.rawQuery(SELECT_START,null);
+		Cursor  cursor = db.rawQuery(SELECCT_ALL_FROM_AVG,null);
 		Log.d("running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
 		ArrayList<PointTime> arrayListPointTime = new ArrayList<PointTime>();
 		 if (cursor.moveToFirst()){
@@ -106,23 +126,158 @@ public class DBSingleton {
 			 int  macAddressInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_MAC_ADDRESS);
 			 int  speedInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_SPEED);
 			 int  timeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_TIME);
-			 
 			 do{/// CHANGING over to PointTome
-				 
-				 	PointTime pointTime = new PointTime();
-				 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
-				 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
-				 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
-				 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
-				 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
-				 	pointTime.setNumberOfAVGsInt(1);// NEED TO NOT BE HARD CODED WARNING!!! 
-				 	
-				 	arrayListPointTime.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
+			 	PointTime pointTime = new PointTime();
+			 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
+			 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
+			 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
+			 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
+			 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+			 	pointTime.setNumberOfAVGsInt(1);// NEEDS TO NOT BE HARD CODED WARNING!!! 
+			 	arrayListPointTime.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
 			 }while(cursor.moveToNext());
+			 cursor.close();
+			 db.close();
 		 }
+		 cursor.close();
+		 db.close();
 		 return arrayListPointTime;
 	}
-
+	public ArrayList<PointTime> listAllFromDB(){
+//		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+//		Cursor  cursor = db.rawQuery(SELECT_ID+" FROM "+ DBContractClass.GPSEntry.TABLE_NAME,null);
+//		Log.d("Running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
+		//ArrayList<PointTime> arrayListPointTime = new ArrayList<PointTime>();// need to get count first then break up the SELECT statements
+//		int rowCountInt = cursor.getCount();
+//		cursor.close();
+//		db.close();
+		ArrayList<PointTime> arrayListPointTime = getDataInSegments( 1000, SELECT_ALL_FROM, DBContractClass.GPSEntry.TABLE_NAME);
+//		 if (cursor.moveToFirst()){
+//			 // I really hate sqlight in Android. Ok so after you run you select statement you get back a cursor object
+//			 // that you need to move the row you want then use the index of the column and the right datatype to pull out 
+//			 // the information. 
+//			 int  baringInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_BEARING);
+//			 int  latitudeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_LAT);
+//			 int  longitudeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_LON);
+//			 int  macAddressInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_MAC_ADDRESS);
+//			 int  speedInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_SPEED);
+//			 int  timeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_TIME);
+//			 
+//			 do{/// CHANGING over to PointTome
+//				 
+//				 	PointTime pointTime = new PointTime();
+//				 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
+//				 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
+//				 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
+//				 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
+//				 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+//				 	pointTime.setNumberOfAVGsInt(1);// NEEDS TO NOT BE HARD CODED WARNING!!! 
+//				 	
+//				 	arrayListPointTime.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
+//			 }while(cursor.moveToNext());
+//		 }
+		 return arrayListPointTime;
+	}
+	public ArrayList<PointTime> getDataInSegments( int numberPersegmentInt, String selectAllFrom,String tableName) {
+		int baseInt  = -1;
+		int maxInt  = numberPersegmentInt;
+		int lastCountInt = 1;
+		ArrayList<PointTime> pointTimeArrayList = new ArrayList<PointTime>();
+		// while something is true lol hahahahha
+		while (lastCountInt > 0){
+			SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+			Cursor  cursor = db.rawQuery(selectAllFrom+tableName+" WHERE "+DBContractClass.GPSEntry._ID+" > "+baseInt +" AND "+DBContractClass.GPSEntry._ID+" < "+maxInt,null);
+			lastCountInt = cursor.getCount();
+			Log.d("Table","rowCountInt ="+ lastCountInt);
+				//Log.d("Running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
+			if (cursor.moveToFirst()){
+				 // I really hate sqlight in Android. Ok so after you run you select statement you get back a cursor object
+				 // that you need to move the row you want then use the index of the column and the right datatype to pull out 
+				 // the information. 
+				 int  baringInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_BEARING);
+				 int  latitudeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_LAT);
+				 int  longitudeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_LON);
+				 int  macAddressInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_MAC_ADDRESS);
+				 int  speedInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_SPEED);
+				 int  timeInt = cursor.getColumnIndex(DBContractClass.GPSEntry.COLUMN_NAME_TIME);
+			 do{/// CHANGING over to PointTome
+			 	PointTime pointTime = new PointTime();
+			 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
+			 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
+			 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
+			 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
+			 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+			 	pointTime.setNumberOfAVGsInt(1);// NEEDS TO NOT BE HARD CODED WARNING!!! 	 	
+			 	pointTimeArrayList.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
+			 }while(cursor.moveToNext());
+			 cursor.close();
+				 db.close();
+		}
+		baseInt += numberPersegmentInt;
+		maxInt += numberPersegmentInt;
+	}
+	return pointTimeArrayList;
+	}
+	
+	public synchronized void writeToTable(String tableNameString, ArrayList<PointTime> pointTimeArrayList, int bachSizeInt){
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		db.beginTransaction();
+		for(int i = 0; i < pointTimeArrayList.size(); i++){
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_BEARING, pointTimeArrayList.get(i).getBearingFloat());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_LAT, pointTimeArrayList.get(i).getLatDouble());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_LON, pointTimeArrayList.get(i).getLonDouble());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_MAC_ADDRESS, pointTimeArrayList.get(i).getMacAddressString());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_SPEED, pointTimeArrayList.get(i).getSpeedMPSFloat());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_TIME, ""+pointTimeArrayList.get(i).getTimeInMillsLong());// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_ROUTE_NAME, pointTimeArrayList.get(i).getRouteString());
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);
+			db.insert(tableNameString, null, contentValues);
+			contentValues.clear();
+			if(i%bachSizeInt == 0){
+				Log.d("Table","write to table "+tableNameString);
+				db.setTransactionSuccessful();
+				db.endTransaction();
+				db.beginTransaction();
+			}
+		}
+		db.insert(DBContractClass.PathGPSEntry.TABLE_NAME, null, contentValues);
+		Log.d("Table","write to table "+tableNameString);
+		db.setTransactionSuccessful();
+		db.endTransaction();
+		db.close();
+	}
+	public synchronized void writeGPSDataToPathTable(float bearingFloat, double latitudeDouble, double longitudeDouble, double speedDouble, long timeLong, String routeNameString){
+		Log.d("Table","RUNNING!! ");
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_BEARING, bearingFloat);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_LAT, latitudeDouble);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_LON, longitudeDouble);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_MAC_ADDRESS, macAddressString);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_SPEED, speedDouble);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_TIME, ""+timeLong);// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_ROUTE_NAME, routeNameString);
+		contentValues.put(DBContractClass.PathGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);
+		
+		db.insert(DBContractClass.PathGPSEntry.TABLE_NAME, null, contentValues);
+		db.close();
+	}
+	public synchronized void writeGPSDataToAVGTable(float bearingFloat, double latitudeDouble, double longitudeDouble, double speedDouble, long timeLong, String routeNameString){
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_BEARING, bearingFloat);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_LAT, latitudeDouble);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_LON, longitudeDouble);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_MAC_ADDRESS, macAddressString);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_SPEED, speedDouble);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_TIME, ""+timeLong);// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_ROUTE_NAME, routeNameString);
+		contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);
+		
+		db.insert(DBContractClass.AVGGPSEntry.TABLE_NAME, null, contentValues);
+		db.close();
+	}
 	public synchronized void writeGPSDataToDB(float bearingFloat, double latitudeDouble, double longitudeDouble, double speedDouble, long timeLong, int timeOutBoolInt){
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 		ContentValues contentValues = new ContentValues();
@@ -166,7 +321,7 @@ public class DBSingleton {
 
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 		if (db !=null){
-			Cursor cursor = db.rawQuery(CHECK_IT_TABLE_NAME_EXISTS, null); 
+			Cursor cursor = db.rawQuery(CHECK_IF_MAIN_TABLE_EXISTS, null); 
 			if(cursor.getCount() ==  0){
 			//	set up max min
 				db.execSQL(SQL_CREATE_GPS_TABLE);
@@ -378,16 +533,16 @@ public class DBSingleton {
 		}
 		private void checkForEquality(
 				ArrayList<PointTime> groupPointTimeArrayList) {
-			ArrayList<PointTime> clone = (ArrayList<PointTime>) groupPointTimeArrayList.clone();
+		//	ArrayList<PointTime> clone = (ArrayList<PointTime>) groupPointTimeArrayList.clone();
 			Collections.sort(groupPointTimeArrayList, new ComparatorPointTimeByLocation(referencePointTime));// need look into selection by the bearing for one point to an other. So parallel point wish similar bearings are not grouped unless they are really on the same road.
-			boolean isTheSame = true;
+			/*boolean isTheSame = true;
 			for(int i = 0; i < clone.size(); i++){
 				Log.d("clone", "ArrayList: "+groupPointTimeArrayList.get(i)+ "  clone  : "+ clone.get(i));
 				if(groupPointTimeArrayList.get(i) != clone.get(i)){
 					isTheSame = false;
 				}
 			}
-			Log.d("clone", (isTheSame)?"Is the same!": "Not the same");
+			Log.d("clone", (isTheSame)?"Is the same!": "Not the same");*/
 		}
 		
 		private boolean isInsideBearing(float bearingFloat, float oneBearingFloat){ // this should be tested.... 
@@ -434,6 +589,85 @@ public class DBSingleton {
 			latConvertDegreeInToMetersDouble = latDistanceFloatArray[0];
 			logConvetDegreeInToMetersDouble =  lonDistanceFloatArray[0];
 		}
+	}
+
+	public int checkDatabaseState() {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		if (db !=null){
+//			db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.AVGGPSEntry.TABLE_NAME);
+//			db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.PathGPSEntry.TABLE_NAME);
+			Cursor cursor = db.rawQuery(CHECK_IF_MAIN_TABLE_EXISTS, null); 
+			if(cursor.getCount() ==  0){
+			//	set up max min
+				db.execSQL(SQL_CREATE_GPS_TABLE);
+				db.execSQL(SQL_CREATE_PATHGPS_TABLE);
+				db.execSQL(SQL_CREATE_AVGGPS_TABLE);
+				Log.d("running","NEW DBs MADE!!! ");
+				cursor.close();
+				db.close();
+				return ALL_NEW_DBS;
+			}else{
+				cursor = db.rawQuery(CHECK_IF_PATH_TABLE_EXISTS, null);
+				if(cursor.getCount() ==  0){
+						db.execSQL(SQL_CREATE_PATHGPS_TABLE);
+						db.execSQL(SQL_CREATE_AVGGPS_TABLE);
+						cursor.close();
+						db.close();
+						return MADE_PATH_AND_AVG_TABLES;
+			//	get max min
+			//	db.execSQL(SQL_DELETE_ENTRIES+);
+			//	db.execSQL(SQL_DELETE_ENTRIES+DBContractClass.AVGGPSEntry.TABLE_NAME);
+			}else{
+				cursor = db.rawQuery(CHECK_IF_AVG_TABLE_EXISTS, null);
+				if(cursor.getCount() ==  0){
+						db.execSQL(SQL_CREATE_AVGGPS_TABLE);
+						cursor.close();
+						db.close();
+						return MADE_AVG_TABLE;
+				}else{
+					cursor.close();
+					db.close();
+					return ALL_TABLES_FOUND;
+				}
+				
+			}
+		}
+	}else{
+		return 0;
+	}
+	}
+	public void writeGPSDataToPathTable(ArrayList<PointTime> pointTimeArrayList) {
+		
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		for(PointTime pointTime:pointTimeArrayList){
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_BEARING,pointTime.getBearingFloat());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_LAT, pointTime.getLatDouble());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_LON, pointTime.getLonDouble());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_MAC_ADDRESS, pointTime.getMacAddressString());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_SPEED,pointTime.getSpeedMPSFloat());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_TIME, ""+pointTime.getTimeInMillsLong());// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_NAME_ROUTE_NAME,pointTime.getRouteString());
+			contentValues.put(DBContractClass.AVGGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);
+		}
+		db.insert(DBContractClass.AVGGPSEntry.TABLE_NAME, null, contentValues);
+		db.close();
+	}
+	public void getRowCountOfAllTable(){
+		
+		Log.d("Table", "MA: mainTable ="+getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
+		Log.d("Table", "MA: PathTable ="+getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
+		Log.d("Table", "MA: AVGTable ="+getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
+	}
+	
+	public int getRowCountOfTable(String string) {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		Cursor cursor = db.rawQuery(SELECT_ALL_FROM+string,null);
+		int cursorCountInt = cursor.getCount();
+		cursor.close();
+		db.close();
+		return cursorCountInt;
+		
 	}
 }
 

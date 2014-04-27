@@ -8,6 +8,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import com.lynchsoftwareengineering.drivespectrum.DBSingleton.DataFilter;
 
+import dalvik.system.BaseDexClassLoader;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -67,19 +69,19 @@ public class SpectrumActivity extends Activity {
 		
 		//33.97941432#-84.01260397#30.1#1396312154436#178.0
 		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
-		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
-		//pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
-		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
-		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
-		pointTimeArrayList = DataAVGRules.computAverageForGPSData(pointTimeArrayList);
+//		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
+//		//pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
+//		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
+//		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
+//		pointTimeArrayList = DataAVGRules.computAverageForGPSData(pointTimeArrayList);
 		//Testing changes
-		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
+		Log.d("Running",  "SA: pointTimeArrayList count = " +pointTimeArrayList.size() );
 		
 		findMaxAndMinValues(pointTimeArrayList);// does what it sounds like
-		Log.d("Running",  "pointTimeArrayList count = " +pointTimeArrayList.size() );
+		Log.d("Running",  "SA: pointTimeArrayList count = " +pointTimeArrayList.size() );
 
 		this.pointTimeArrayList = getRelivePointArrayList(pointTimeArrayList);
-		Log.d("Running",  "pointTimeArrayList count = " +this.pointTimeArrayList.size() );
+		Log.d("Running",  "SA: pointTimeArrayList count = " +this.pointTimeArrayList.size() );
 	}
 
 	private void findMaxAndMinValues(ArrayList<PointTime> pointTimeArrayList) {
@@ -122,8 +124,7 @@ public class SpectrumActivity extends Activity {
 		Log.d("Data Test", ""+((maxSpeedDouble*60)*60)/1000);
 	}
 
-	private ArrayList<PointTime> getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues() {
-		ArrayList<PointTime> pointTimeArraylist = dbSingleton.listAllFromDB();
+	private ArrayList<PointTime> getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues(ArrayList<PointTime> pointTimeArraylist) {
 		if (pointTimeArraylist.size() == 0){
 			return pointTimeArraylist;// need to back at this latter and see if the return null still work
 		}
@@ -251,8 +252,12 @@ public class SpectrumActivity extends Activity {
 
 	private void initCheckDB() {
 		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);//  No check need new version :)
-		//DBSingleton.DataFilter dateFilter = dbSingleton.new DataFilter();
-
+		int caseInt = dbSingleton.checkDatabaseState();
+		if(caseInt == DBSingleton.ALL_TABLES_FOUND){
+			pointTimeArrayList = dbSingleton.getDataInSegments(1000, "SELECT * FROM ", DBContractClass.AVGGPSEntry.TABLE_NAME);
+		}else{
+			pointTimeArrayList = dbSingleton.getDataInSegments(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME);
+		}
 	}
 
 	private void getScreenSize(){

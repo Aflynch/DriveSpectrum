@@ -49,10 +49,13 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	LocationManager locationManager;
-	DatabaseSingleton dbSingleton;
+	DBSingleton dbSingleton;
 	Calendar calendar;
+	WifiInfo wifiInfo;
+	File file;
 	ArrayList<View> viewArrayList;
 	Context context;
+	
 	public static final String DB_NAME = "DB_NAME";
 	int widthInt; 
 	int heightInt;
@@ -63,25 +66,54 @@ public class MainActivity extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 		context = this;
 		getScreenSize();
-		super.onCreate(savedInstanceState);
-		buildLayout();
 		setContentView(buildLayout());
-//		should be put in  method latter. 
-		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wInfo = wifiManager.getConnectionInfo();
-		String macAddress = wInfo.getMacAddress();
-		File file = getDir(DB_NAME,Activity.MODE_PRIVATE);
-		Intent intent = new Intent(this, GPSIntentService.class);
-		intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wInfo.getMacAddress());
-		intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
-		startService(intent);
+		startGPSIntentService();
+		manageStateOfDatabase();
 	//	DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
 	//	ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
-		wifiManager =null;
-		wInfo= null;
+
 		//test
+	}
+
+
+	private void manageStateOfDatabase() {
+		DBSingleton bdSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wifiInfo.getMacAddress());
+		int caseInt = bdSingleton.checkDatabaseState();
+		switch(caseInt){
+			case(DBSingleton.ALL_NEW_DBS): Log.d("Table",""+caseInt+" no acction was taken.");// no case needed GPSSingleton will data and up data tables
+				break;
+			case(DBSingleton.MADE_PATH_AND_AVG_TABLES):// this is not yet tested! 
+				Intent intent = new Intent(this, BuildPathAndAVGTableIntentService.class);
+				intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wifiInfo.getMacAddress());
+				intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
+				Log.d("Table","BuildPathAndAVGTableIntentServic is about to be started.");
+				startService(intent);
+				break;
+			case(DBSingleton.MADE_AVG_TABLE): Log.d("Table",""+caseInt+" no acction was taken.");
+				break; 
+			case(DBSingleton.ALL_TABLES_FOUND):Log.d("Table", "All tables found.");
+			dbSingleton = DBSingleton.getInstanceOfDataBaseSingletion();
+			Log.d("Table", "MA: mainTable ="+dbSingleton.getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
+			Log.d("Table", "MA: PathTable ="+dbSingleton.getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
+			Log.d("Table", "MA: AVGTable ="+dbSingleton.getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
+				break;
+			default:Log.d("Table","WARNING CASE "+ caseInt+" NOT COVED: THIS IS DEFAULT CASE!!"); 
+		}
+	}
+
+
+	private void startGPSIntentService() {
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		wifiInfo = wifiManager.getConnectionInfo();
+		String macAddress = wifiInfo.getMacAddress();
+		file = getDir(DB_NAME,Activity.MODE_PRIVATE);
+		Intent intent = new Intent(this, GPSIntentService.class);
+		intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wifiInfo.getMacAddress());
+		intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
+		startService(intent);
 	}
 		
 
