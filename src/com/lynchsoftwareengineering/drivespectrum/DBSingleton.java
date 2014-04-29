@@ -143,7 +143,7 @@ public class DBSingleton {
 		 db.close();
 		 return arrayListPointTime;
 	}
-	public ArrayList<PointTime> listAllFromDB(){
+//	public ArrayList<PointTime> listAllFromDB(){
 //		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 //		Cursor  cursor = db.rawQuery(SELECT_ID+" FROM "+ DBContractClass.GPSEntry.TABLE_NAME,null);
 //		Log.d("Running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
@@ -151,7 +151,7 @@ public class DBSingleton {
 //		int rowCountInt = cursor.getCount();
 //		cursor.close();
 //		db.close();
-		ArrayList<PointTime> arrayListPointTime = getDataInSegments( 1000, SELECT_ALL_FROM, DBContractClass.GPSEntry.TABLE_NAME);
+//		ArrayList<PointTime> arrayListPointTime = getDataInSegments( 1000, SELECT_ALL_FROM, DBContractClass.GPSEntry.TABLE_NAME);
 //		 if (cursor.moveToFirst()){
 //			 // I really hate sqlight in Android. Ok so after you run you select statement you get back a cursor object
 //			 // that you need to move the row you want then use the index of the column and the right datatype to pull out 
@@ -176,9 +176,99 @@ public class DBSingleton {
 //				 	arrayListPointTime.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
 //			 }while(cursor.moveToNext());
 //		 }
-		 return arrayListPointTime;
+//		 return arrayListPointTime;
+//	}
+	public ArrayList<PointTime> getDataInSegmentsFromPathTable( int numberPersegmentInt, String selectAllFrom,String tableName) {
+		int baseInt  = -1;
+		int maxInt  = numberPersegmentInt;
+		int lastCountInt = 1;
+		ArrayList<PointTime> pointTimeArrayList = new ArrayList<PointTime>();
+		// while something is true lol hahahahha
+		while (lastCountInt > 0){
+			SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+			Cursor  cursor = db.rawQuery(selectAllFrom+tableName+" WHERE "+DBContractClass.GPSEntry._ID+" > "+baseInt +" AND "+DBContractClass.GPSEntry._ID+" < "+maxInt,null);
+			lastCountInt = cursor.getCount();
+			Log.d("Table","rowCountInt ="+ lastCountInt);
+				//Log.d("Running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
+			if (cursor.moveToFirst()){
+				 // I really hate sqlight in Android. Ok so after you run you select statement you get back a cursor object
+				 // that you need to move the row you want then use the index of the column and the right datatype to pull out 
+				 // the information. 
+				 int  baringInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_BEARING);
+				 int  latitudeInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_LAT);
+				 int  longitudeInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_LON);
+				 int  macAddressInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_MAC_ADDRESS);
+				 int  speedInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_SPEED);
+				 int  timeInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_TIME);
+				 int  routeNameInt = cursor.getColumnIndex(DBContractClass.PathGPSEntry.COLUMN_NAME_ROUTE_NAME);
+			 do{/// CHANGING over to PointTome
+			 	PointTime pointTime = new PointTime();
+			 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
+			 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
+			 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
+			 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
+			 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+			 	pointTime.setNumberOfAVGsInt(1);// NEEDS TO NOT BE HARD CODED WARNING!!! 	 	
+			 	pointTime.setRouteString(cursor.getString(routeNameInt));
+			 	pointTimeArrayList.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
+			 }while(cursor.moveToNext());
+			 cursor.close();
+				 db.close();
+		}
+		cursor.close();
+		db.close();
+		baseInt += numberPersegmentInt;
+		maxInt += numberPersegmentInt;
 	}
-	public ArrayList<PointTime> getDataInSegments( int numberPersegmentInt, String selectAllFrom,String tableName) {
+	return pointTimeArrayList;
+	}
+	
+	public ArrayList<PointTime> getDataInSegmentsFromAVGTable( int numberPersegmentInt, String selectAllFrom,String tableName) {
+		int baseInt  = -1;
+		int maxInt  = numberPersegmentInt;
+		int lastCountInt = 1;
+		ArrayList<PointTime> pointTimeArrayList = new ArrayList<PointTime>();
+		// while something is true lol hahahahha
+		while (lastCountInt > 0){
+			SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+			Cursor  cursor = db.rawQuery(selectAllFrom+tableName+" WHERE "+DBContractClass.GPSEntry._ID+" > "+baseInt +" AND "+DBContractClass.GPSEntry._ID+" < "+maxInt,null);
+			lastCountInt = cursor.getCount();
+			Log.d("Table","rowCountInt ="+ lastCountInt);
+				//Log.d("Running", "Number of columns in DB = " + cursor.getColumnCount() + " Number of rows " +  getNumberOfRowsFromGPSTable());
+			if (cursor.moveToFirst()){
+				 // I really hate sqlight in Android. Ok so after you run you select statement you get back a cursor object
+				 // that you need to move the row you want then use the index of the column and the right datatype to pull out 
+				 // the information. 
+				 int  baringInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_BEARING);
+				 int  latitudeInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_LAT);
+				 int  longitudeInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_LON);
+				 int  macAddressInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_MAC_ADDRESS);
+				 int  speedInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_SPEED);
+				 int  timeInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_TIME);
+				 int  routeNameInt = cursor.getColumnIndex(DBContractClass.AVGGPSEntry.COLUMN_NAME_ROUTE_NAME);
+			//	Log.d("Table","routeNameInt = "+routeNameInt +" timeint = "+timeInt);
+			 do{/// CHANGING over to PointTome
+			 	PointTime pointTime = new PointTime();
+			 	pointTime.setLatDouble( cursor.getDouble(latitudeInt));
+			 	pointTime.setLonDouble( cursor.getDouble(longitudeInt));
+			 	pointTime.setSpeedMPS((float)cursor.getDouble(speedInt));
+			 	pointTime.setTimeInMillsLong(Long.parseLong(cursor.getString(timeInt)));
+			 	pointTime.setBearingFloat(cursor.getFloat(baringInt));
+			 	pointTime.setNumberOfAVGsInt(1);// NEEDS TO NOT BE HARD CODED WARNING!!! 
+			 	pointTime.setRouteString(cursor.getString(routeNameInt));
+			 	pointTimeArrayList.add(pointTime);// I needed to know that I was not passing just the pointer because I will be reusing this object.
+			 }while(cursor.moveToNext());
+			 cursor.close();
+				 db.close();
+		}
+		cursor.close();
+		db.close();
+		baseInt += numberPersegmentInt;
+		maxInt += numberPersegmentInt;
+	}
+	return pointTimeArrayList;
+	}
+	public ArrayList<PointTime> getDataInSegmentsFromMainTable( int numberPersegmentInt, String selectAllFrom,String tableName) {
 		int baseInt  = -1;
 		int maxInt  = numberPersegmentInt;
 		int lastCountInt = 1;
@@ -213,9 +303,11 @@ public class DBSingleton {
 			 cursor.close();
 				 db.close();
 		}
+		cursor.close();
+		db.close();
 		baseInt += numberPersegmentInt;
 		maxInt += numberPersegmentInt;
-	}
+	}			
 	return pointTimeArrayList;
 	}
 	
@@ -241,7 +333,7 @@ public class DBSingleton {
 				db.beginTransaction();
 			}
 		}
-		db.insert(DBContractClass.PathGPSEntry.TABLE_NAME, null, contentValues);
+		db.insert(tableNameString, null, contentValues);
 		Log.d("Table","write to table "+tableNameString);
 		db.setTransactionSuccessful();
 		db.endTransaction();
@@ -594,8 +686,8 @@ public class DBSingleton {
 	public int checkDatabaseState() {
 		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
 		if (db !=null){
-//			db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.AVGGPSEntry.TABLE_NAME);
-//			db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.PathGPSEntry.TABLE_NAME);
+	//		db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.AVGGPSEntry.TABLE_NAME);
+	//		db.execSQL(SQL_DELETE_ENTRIES +" "+ DBContractClass.PathGPSEntry.TABLE_NAME);
 			Cursor cursor = db.rawQuery(CHECK_IF_MAIN_TABLE_EXISTS, null); 
 			if(cursor.getCount() ==  0){
 			//	set up max min

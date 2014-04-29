@@ -22,7 +22,7 @@ public class BuildPathAndAVGTableIntentService extends IntentService{
 		DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);
 		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
 		Log.d("Table", "Path about to be sorrtd");
-		ArrayList<PointTime> pointTimeArrayList = dataFilter.processData(dbSingleton.listAllFromDB());
+		ArrayList<PointTime> pointTimeArrayList = dataFilter.processData(dbSingleton.getDataInSegmentsFromMainTable(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME));
 		Log.d("Table", "Path sorrtd:: ArrayList size = "+pointTimeArrayList.size());
 		dbSingleton.writeToTable(DBContractClass.PathGPSEntry.TABLE_NAME, pointTimeArrayList, 1000);
 		Log.d("Table", "Path table was writen too. size = "+ pointTimeArrayList.size() );

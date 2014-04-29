@@ -89,7 +89,11 @@ public class SpectrumActivity extends Activity {
 		//latitude S < 0		
 		//longitude W is < 0
 		//longitude E is > 0
-		
+		PointTime startPointTime = pointTimeArrayList.get(0);
+		latitudeMaxDouble = startPointTime.getLatDouble();
+		latitudeMinDouble = latitudeMaxDouble;
+		longitudeMaxDouble = startPointTime.getLonDouble();
+		longitudeMinDouble = longitudeMaxDouble;
 		// reread first index. I know it was just easier for testing. 
 		int arraylistSizeInt = pointTimeArrayList.size()-1;
 		for(int i  = 0; i <arraylistSizeInt; i++){
@@ -254,9 +258,9 @@ public class SpectrumActivity extends Activity {
 		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);//  No check need new version :)
 		int caseInt = dbSingleton.checkDatabaseState();
 		if(caseInt == DBSingleton.ALL_TABLES_FOUND){
-			pointTimeArrayList = dbSingleton.getDataInSegments(1000, "SELECT * FROM ", DBContractClass.AVGGPSEntry.TABLE_NAME);
+			pointTimeArrayList = dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.AVGGPSEntry.TABLE_NAME);
 		}else{
-			pointTimeArrayList = dbSingleton.getDataInSegments(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME);
+			pointTimeArrayList = dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME);
 		}
 	}
 
@@ -308,6 +312,7 @@ public class SpectrumActivity extends Activity {
 		ArrayList<LinePaintDataOject> linePaintDataOjectArrayList = new ArrayList<LinePaintDataOject>();
 		public DrawView(Context context) {
 			super(context);
+			testIndexInt = 0;
 			setBackgroundColor(Color.argb(50, 0, 0, 0));
 			SpectrumOnTouchListeneren specturmOnTouchListener = new SpectrumOnTouchListeneren(this);
 			setOnTouchListener(specturmOnTouchListener);
@@ -384,8 +389,9 @@ public class SpectrumActivity extends Activity {
 			Paint paint= new Paint();
 			//canvas.clipRect(25, 25, 50, 50);
 			paint.setStrokeWidth(3);
-	
-			for (int i = 0; i < Math.min(arraySizeInt, testIndexInt) ; i++){
+			int routeCheckCountInt = 0;
+			Log.d("Table", "bitch'n "+ testIndexInt);
+			for (int i = 0; i <  arraySizeInt/*Math.min(arraySizeInt, testIndexInt)*/ ; i++){
 				pointTime = pointTimeArrayList.get(i);
 				pointTime2 = pointTimeArrayList.get(i+1);
 				long timeLong = pointTime.getTimeInMillsLong();
@@ -398,6 +404,10 @@ public class SpectrumActivity extends Activity {
 					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
 					pointTime = pointTimeArrayList.get(i);
 					pointTime2 = pointTimeArrayList.get(i);	
+//					Log.d("Route Check", " RouteCheckCoutInt = "+routeCheckCountInt);
+				}else{
+					routeCheckCountInt++;
+					Log.d("Route Check", " RouteCheckCoutInt = "+routeCheckCountInt);
 				}
 			}
 			/*

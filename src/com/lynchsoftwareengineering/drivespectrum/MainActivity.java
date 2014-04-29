@@ -96,9 +96,10 @@ public class MainActivity extends Activity {
 				break; 
 			case(DBSingleton.ALL_TABLES_FOUND):Log.d("Table", "All tables found.");
 			dbSingleton = DBSingleton.getInstanceOfDataBaseSingletion();
-			Log.d("Table", "MA: mainTable ="+dbSingleton.getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
-			Log.d("Table", "MA: PathTable ="+dbSingleton.getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
-			Log.d("Table", "MA: AVGTable ="+dbSingleton.getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
+			dbSingleton.getRowCountOfAllTable();
+//			Log.d("Table", "MA: mainTable ="+dbSingleton.getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
+//			Log.d("Table", "MA: PathTable ="+dbSingleton.getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
+//			Log.d("Table", "MA: AVGTable ="+dbSingleton.getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
 				break;
 			default:Log.d("Table","WARNING CASE "+ caseInt+" NOT COVED: THIS IS DEFAULT CASE!!"); 
 		}
