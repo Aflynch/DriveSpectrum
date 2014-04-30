@@ -1,5 +1,6 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -46,11 +47,24 @@ public class StringBasedDataInCoding {
 			while(boolInt == 0){
 				PointTime pointTime = new PointTime();
 				pointTime.setMacAddressString(bufferedReader.readLine());
+				try{
 				pointTime.setNumberOfAVGsInt(Integer.parseInt(bufferedReader.readLine()));
+				}catch(NumberFormatException e){
+					pointTime.setNumberOfAVGsInt(1);
+				}
 				pointTime.setRouteString(bufferedReader.readLine());
+				try{
 				pointTime.setX(Integer.parseInt(bufferedReader.readLine()));
 				pointTime.setY(Integer.parseInt(bufferedReader.readLine()));
+				}catch(NumberFormatException e){
+					pointTime.setX(0);
+					pointTime.setY(0);
+				}
+				try{
 				pointTime.setBearingFloat(Float.parseFloat(bufferedReader.readLine()));
+				}catch(Exception e){
+					pointTime.setBearingFloat(0);
+				}
 				pointTime.setLatDouble(Double.parseDouble(bufferedReader.readLine()));
 				pointTime.setLonDouble(Double.parseDouble(bufferedReader.readLine()));
 				try{// yah things did not go well here and I am out of time

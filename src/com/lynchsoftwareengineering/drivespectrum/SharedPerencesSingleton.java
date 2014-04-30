@@ -29,7 +29,6 @@ public class SharedPerencesSingleton {
 		return sharedPerencesSingleton;
 	}
 	public void writeToDB(String keyString,String dataString){
-		
 		sharedPerferencesEditor.putString(keyString, dataString);
 		sharedPerferencesEditor.commit();
 	}

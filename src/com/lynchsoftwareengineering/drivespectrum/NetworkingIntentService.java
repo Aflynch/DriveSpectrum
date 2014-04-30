@@ -44,7 +44,7 @@ public class NetworkingIntentService extends IntentService{
 		dbSingleton.makeGlobaleTable();
 		try {
 			Socket socket = new Socket(NetworkingSettings.IP_ADDRESS, NetworkingSettings.SOCKET_NUMBER);
-			StringBasedDataInCoding.sendData(socket, dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.AVGGPSEntry.TABLE_NAME));
+			StringBasedDataInCoding.sendData(socket, dbSingleton.getDataInSegmentsFromMainTable(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME));
 			Log.d("Threading","Data may have been sent. ");
 			ArrayList<PointTime> pointTimeArrayList = StringBasedDataInCoding.readData(socket);
 			dbSingleton.writeToTable(DBContractClass.GlobalGPSEntry.TABLE_NAME, pointTimeArrayList, 1000);
