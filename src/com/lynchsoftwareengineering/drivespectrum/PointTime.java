@@ -1,21 +1,22 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
-import android.graphics.Point;
-import android.util.Log;
+import java.io.Serializable;
 
-public class PointTime extends Point implements Comparable<PointTime > {// lenght -15,+5 , 
+public class PointTime implements Comparable<PointTime >, Serializable {// lenght -15,+5 , 
 	private String routeString;
 	private Double latDouble, lonDouble;
 	private long timeInMillsLong;
 	private String  macAddressString;
 	private float speedMPSFloat;
 	private float bearingFloat;
-	private int numberOfAVGsInt;
+	private int numberOfAVGsInt, x,y;
 	public PointTime(){
-		
+		numberOfAVGsInt = 1;
+		speedMPSFloat = 25;
 	}
 	public PointTime(int xInt,int yInt,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString){
-		super.set(xInt, yInt);
+		this.x = xInt;
+		this.y = yInt;
 		this.speedMPSFloat = speedMPSFloat;
 		this.bearingFloat = bearingFloat;
 		this.timeInMillsLong = timeInMillsLong;
@@ -23,6 +24,22 @@ public class PointTime extends Point implements Comparable<PointTime > {// lengh
 		this.routeString = routeString;
 		this.numberOfAVGsInt = 1;
 	}	
+	public void set(int x,int y){
+		this.x = x;
+		this.y = y;
+	}
+	public int getX() {
+		return x;
+	}
+	public void setX(int x) {
+		this.x = x;
+	}
+	public int getY() {
+		return y;
+	}
+	public void setY(int y) {
+		this.y = y;
+	}
 	public PointTime(double latDouble,double lonDouble,float speedMPSFloat, float bearingFloat, long  timeInMillsLong, String macAddressString, String routeString){
 		this.latDouble = latDouble;
 		this.lonDouble = lonDouble;

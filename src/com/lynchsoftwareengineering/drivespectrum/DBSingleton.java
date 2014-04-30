@@ -26,6 +26,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.SeekBar;
 import android.widget.Toast;
 /*
  * This class is a wrapper class for SQLightDatabase
@@ -323,7 +324,7 @@ public class DBSingleton {
 			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_SPEED, pointTimeArrayList.get(i).getSpeedMPSFloat());
 			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_TIME, ""+pointTimeArrayList.get(i).getTimeInMillsLong());// CHECK FOR MAX MIN LAT LON SPEED!!!! 
 			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_NAME_ROUTE_NAME, pointTimeArrayList.get(i).getRouteString());
-			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);
+			contentValues.put(DBContractClass.PathGPSEntry.COLUMN_VERSION_INT, DBContractClass.GPSEntry.VERSION_INT);// WARNING static state for all tables!!!
 			db.insert(tableNameString, null, contentValues);
 			contentValues.clear();
 			if(i%bachSizeInt == 0){
@@ -760,6 +761,57 @@ public class DBSingleton {
 		db.close();
 		return cursorCountInt;
 		
+	}
+	public void writeToGlobalGPSTable(float bearing, double latitude,double longitude, float speed, long currentTimeMillis, int boolInt) {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		Cursor cursor = db.rawQuery(DBContractClass.GlobalGPSEntry.CHECK_IF_GLOBAL_TABLE_EXISTS, null); 
+		if(cursor.getCount() ==  0){
+			db.execSQL(DBContractClass.NEWGPSEntry.SQL_CREATE_NEWGPS_TABLE);
+		}
+		cursor.close();
+		//SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_BEARING,bearing);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_LAT, latitude);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_LON, longitude);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_MAC_ADDRESS, macAddressString);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_SPEED,speed);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_TIME, ""+currentTimeMillis);// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_ROUTE_NAME,"nulls");
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_VERSION_INT, DBContractClass.NEWGPSEntry.VERSION_INT);
+		db.insert(DBContractClass.NEWGPSEntry.TABLE_NAME, null, contentValues);
+		db.close();
+	}
+	
+	public void writeToNewGPSTable(float bearing, double latitude,double longitude, float speed, long currentTimeMillis, int boolInt) {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		Cursor cursor = db.rawQuery(DBContractClass.NEWGPSEntry.CHECK_IF_NEW_TABLE_EXISTS, null); 
+		if(cursor.getCount() ==  0){
+			db.execSQL(DBContractClass.NEWGPSEntry.SQL_CREATE_NEWGPS_TABLE);
+		}
+		cursor.close();
+		//SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_BEARING,bearing);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_LAT, latitude);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_LON, longitude);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_MAC_ADDRESS, macAddressString);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_SPEED,speed);
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_TIME, ""+currentTimeMillis);// CHECK FOR MAX MIN LAT LON SPEED!!!! 
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_NAME_ROUTE_NAME,"nulls");
+		contentValues.put(DBContractClass.NEWGPSEntry.COLUMN_VERSION_INT, DBContractClass.NEWGPSEntry.VERSION_INT);
+		db.insert(DBContractClass.NEWGPSEntry.TABLE_NAME, null, contentValues);
+		db.close();
+	}
+	public void makeGlobaleTable() {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		db.execSQL(DBContractClass.GlobalGPSEntry.SQL_CREATE_GLOBALGPS_TABLE);
+		db.close();
+	}
+	public void deteleTable(String tableName) {
+		SQLiteDatabase db = SQLiteDatabase.openDatabase(filePathString+DB_FILE_NAME,null, SQLiteDatabase.CREATE_IF_NECESSARY);
+		db.execSQL(SQL_DELETE_ENTRIES+ " "+tableName);
+		db.close();
 	}
 }
 

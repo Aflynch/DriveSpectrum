@@ -71,7 +71,7 @@ public class SpectrumActivity extends Activity {
 		// 34.00009497#-84.16147024#19.5#1396312154436#355.1
 //		ArrayList<PointTime> pointTimeArrayList = getArrayListPointTimeGPSDataAndSetStartMaxAndMinValues();
 //		//pointTimeArrayList = MakeTestData.getTestPointTimeArrayList(0, 0, 0); // Testing change
-//		DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
+//		DBSingleton.DataFilter dataFilter = sharedPerencesSingleton.new DataFilter();
 //		pointTimeArrayList = dataFilter.processData(pointTimeArrayList);
 //		pointTimeArrayList = DataAVGRules.computAverageForGPSData(pointTimeArrayList);
 		//Testing changes
@@ -258,7 +258,7 @@ public class SpectrumActivity extends Activity {
 		dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);//  No check need new version :)
 		int caseInt = dbSingleton.checkDatabaseState();
 		if(caseInt == DBSingleton.ALL_TABLES_FOUND){
-			pointTimeArrayList = dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.AVGGPSEntry.TABLE_NAME);
+			pointTimeArrayList = dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.GlobalGPSEntry.TABLE_NAME);
 		}else{
 			pointTimeArrayList = dbSingleton.getDataInSegmentsFromAVGTable(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME);
 		}
@@ -401,7 +401,7 @@ public class SpectrumActivity extends Activity {
 					int colorInt =( (int)(255*(pointTime.getSpeedMPSFloat()/ maxSpeedDouble)));
 					paint.setColor(Color.argb(255,255-colorInt,colorInt,0));
 //				canvas.drawLine(0, 0, 400, 400, paint);
-					canvas.drawLine((float)pointTime.x,(float)pointTime.y, (float)pointTime2.x, (float)pointTime2.y, paint);
+					canvas.drawLine((float)pointTime.getX(),(float)pointTime.getY(), (float)pointTime2.getX(), (float)pointTime2.getY(), paint);
 					pointTime = pointTimeArrayList.get(i);
 					pointTime2 = pointTimeArrayList.get(i);	
 //					Log.d("Route Check", " RouteCheckCoutInt = "+routeCheckCountInt);

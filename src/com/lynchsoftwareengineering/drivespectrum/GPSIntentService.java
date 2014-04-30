@@ -1,6 +1,9 @@
 package com.lynchsoftwareengineering.drivespectrum;
 
+import java.util.ArrayList;
+
 import com.lynchsoftwareengineering.drivespectrum.DBContractClass.GPSEntry;
+import com.lynchsoftwareengineering.drivespectrum.DBSingleton.DataFilter;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Context;
@@ -29,6 +32,7 @@ public class GPSIntentService extends IntentService {
 	String macAddressString;
 	String filePathString;
 	Long timeLong;
+	int countInt;
 	public GPSIntentService() {
 		super("GPDIntrentService");
 	}
@@ -38,7 +42,7 @@ public class GPSIntentService extends IntentService {
 		super.onStart(intent, startInt);
 		macAddressString = intent.getStringExtra(""+MAC_ADDRESS_KEY);
 		filePathString = intent.getStringExtra(""+FILE_PATH_KEY);
-		
+		countInt = 0;
 		setUpGPS();
 	}
 	
@@ -75,8 +79,25 @@ public class GPSIntentService extends IntentService {
 			if (location.getSpeed()>MIN_SPEED_MPS   ){
 					int boolInt = (timeLong== null || ((System.currentTimeMillis() - timeLong))>GPSIntentService.MAX_TIME_OUT_TIME )? 0 : 1;// sqlight has no boolean type. Docs say to use Integer 1 or 0
 					dbSingleton.writeGPSDataToDB(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),System.currentTimeMillis(), boolInt); // 0 true 1 false  
+					dbSingleton.writeToNewGPSTable(location.getBearing(),location.getLatitude(),location.getLongitude(),location.getSpeed(),System.currentTimeMillis(), boolInt);
 					Log.d("Service", "GPS data send to  database."+location.toString());
 					timeLong = System.currentTimeMillis();
+					// this is so wrong but I am out of time and it will get the job done for now.
+					countInt++;
+					if (countInt%DataAVGRules.NUMBER_OF_POINTS_TO_AVG == 0){
+						DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(filePathString, macAddressString);
+						DBSingleton.DataFilter dataFilter = dbSingleton.new DataFilter();
+						Log.d("Table", "Path about to be sorrtd");
+						ArrayList<PointTime> pointTimeArrayList = dataFilter.processData(dbSingleton.getDataInSegmentsFromMainTable(1000, "SELECT * FROM ", DBContractClass.GPSEntry.TABLE_NAME));
+						Log.d("Table", "Path sorrtd:: ArrayList size = "+pointTimeArrayList.size());
+						dbSingleton.writeToTable(DBContractClass.PathGPSEntry.TABLE_NAME, pointTimeArrayList, 1000);
+						Log.d("Table", "Path table was writen too. size = "+ pointTimeArrayList.size() );
+						pointTimeArrayList = DataAVGRules.computAverageForGPSData(pointTimeArrayList);
+						Log.d("Table", "AVG was computed. size = "+pointTimeArrayList.size());
+						dbSingleton.writeToTable(DBContractClass.AVGGPSEntry.TABLE_NAME, pointTimeArrayList, 1000);
+						Log.d("Tables", "AVG table was writen too");
+						dbSingleton.getRowCountOfAllTable();
+					}
 			}
 		}
 

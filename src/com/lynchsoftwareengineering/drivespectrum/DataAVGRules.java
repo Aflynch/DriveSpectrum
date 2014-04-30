@@ -18,6 +18,7 @@ public class DataAVGRules {
 	public static int MIN_ROUTE_NUM_IN_DIEMETER  =2;
 	public static int BEARING_RANGE_DEGREES_TOLERANCE = 15;// this is plus minus
 	public static int NUMBER_OF_POINTS_TO_AVG = 10;
+	public static int DATA_BACH_SIZE = 50;
 
 	public static float[] findLatLonRange(double rangeLatMinDouble,double rangeLonMinDouble,double rangeLatMaxDouble,double rangeLonMaxDouble){
 		float[] latFloatArray = new float[3];

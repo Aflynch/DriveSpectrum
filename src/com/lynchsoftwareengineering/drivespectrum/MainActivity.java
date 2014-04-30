@@ -72,8 +72,8 @@ public class MainActivity extends Activity {
 		setContentView(buildLayout());
 		startGPSIntentService();
 		manageStateOfDatabase();
-	//	DBSingleton dbSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
-	//	ArrayList<String> stringArrayList= dbSingleton.listAllFromDB();
+	//	DBSingleton sharedPerencesSingleton = DBSingleton.getInstanceOfDataBaseSingleton(file.getAbsolutePath(), wInfo.getMacAddress());
+	//	ArrayList<String> stringArrayList= sharedPerencesSingleton.listAllFromDB();
 
 		//test
 	}
@@ -97,9 +97,9 @@ public class MainActivity extends Activity {
 			case(DBSingleton.ALL_TABLES_FOUND):Log.d("Table", "All tables found.");
 			dbSingleton = DBSingleton.getInstanceOfDataBaseSingletion();
 			dbSingleton.getRowCountOfAllTable();
-//			Log.d("Table", "MA: mainTable ="+dbSingleton.getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
-//			Log.d("Table", "MA: PathTable ="+dbSingleton.getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
-//			Log.d("Table", "MA: AVGTable ="+dbSingleton.getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
+//			Log.d("Table", "MA: mainTable ="+sharedPerencesSingleton.getRowCountOfTable(DBContractClass.GPSEntry.TABLE_NAME));
+//			Log.d("Table", "MA: PathTable ="+sharedPerencesSingleton.getRowCountOfTable(DBContractClass.PathGPSEntry.TABLE_NAME));
+//			Log.d("Table", "MA: AVGTable ="+sharedPerencesSingleton.getRowCountOfTable(DBContractClass.AVGGPSEntry.TABLE_NAME));
 				break;
 			default:Log.d("Table","WARNING CASE "+ caseInt+" NOT COVED: THIS IS DEFAULT CASE!!"); 
 		}
@@ -218,7 +218,16 @@ public class MainActivity extends Activity {
 			Log.d("DB_TEST","onClick was called");
 
 			if(view.equals(viewArrayList.get(0))){
-				Toast.makeText(context, "Some day when you are good I will make this work.", Toast.LENGTH_LONG).show();
+//				Intent intent = new Intent(this, BuildPathAndAVGTableIntentService.class);
+//				intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wifiInfo.getMacAddress());
+//				intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
+//				Log.d("Table","BuildPathAndAVGTableIntentServic is about to be started.");
+//				startService(intent);
+				Intent intent = new Intent(context, NetworkingIntentService.class);
+				intent.putExtra(GPSIntentService.MAC_ADDRESS_KEY+"", wifiInfo.getMacAddress());
+				intent.putExtra(GPSIntentService.FILE_PATH_KEY+"", file.getAbsolutePath());
+				context.startService(intent);
+				Toast.makeText(context, "Starting up network conection hold on.", Toast.LENGTH_LONG).show();
 			} else {
 				context.startActivity(new Intent(context, SpectrumActivity.class));
 			}
