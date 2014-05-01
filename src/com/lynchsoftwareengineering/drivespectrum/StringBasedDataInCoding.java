@@ -5,7 +5,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StreamCorruptedException;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -34,6 +37,35 @@ public class StringBasedDataInCoding {
 				}
 			}
 			bufferedWriter.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static ArrayList<PointTime> readDataTest(Socket socket){
+		try {
+			ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+			return (ArrayList<PointTime>) objectInputStream.readObject();
+		} catch (StreamCorruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static void sendDataTest(Socket socket, ArrayList<PointTime> pointTimeArrayList){
+		//ObjectInputStream objectInputStream = new ObjectInputStream(socket.);
+		try {
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+			objectOutputStream.writeObject(pointTimeArrayList);
+			objectOutputStream.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
